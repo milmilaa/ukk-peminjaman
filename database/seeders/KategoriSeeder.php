@@ -10,12 +10,18 @@ class KategoriSeeder extends Seeder
     public function run(): void
     {
         $kategoris = [
-            'Elektronik',
-            'Alat Tulis & Kantor',
-            'Olahraga',
-            'Seni & Musik',
-            'Infrastruktur Teknologi',
-            'Barang Praktik Kejuruan',
+            'Alat Diagnostik',
+            'Alat Bedah',
+            'Alat Monitoring',
+            'Alat Terapi',
+            'Alat Rehabilitasi',
+            'Alat Perawatan Pasien',
+            'Peralatan Laboratorium',
+            'Peralatan Radiologi',
+            'Peralatan Gawat Darurat',
+            'Peralatan ICU',
+            'Peralatan Kebidanan',
+            'Peralatan Sterilisasi',
         ];
 
         foreach ($kategoris as $kategori) {

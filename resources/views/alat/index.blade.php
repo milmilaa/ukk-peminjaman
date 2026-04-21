@@ -5,6 +5,7 @@
 @section('content')
 
 <style>
+/* ================= HEADER ================= */
 .page-header {
     display: flex;
     justify-content: space-between;
@@ -23,6 +24,7 @@
     font-size: 14px;
 }
 
+/* ================= BUTTON ================= */
 .btn-add {
     background: linear-gradient(135deg, #2563eb, #1d4ed8);
     color: #fff;
@@ -41,6 +43,7 @@
     box-shadow: 0 8px 20px rgba(37,99,235,.35);
 }
 
+/* ================= CARD ================= */
 .card {
     background: #fff;
     border-radius: 14px;
@@ -60,6 +63,7 @@
     }
 }
 
+/* ================= TABLE ================= */
 .table {
     width: 100%;
     border-collapse: collapse;
@@ -67,44 +71,44 @@
 }
 
 .table thead {
-    background: #f9fafb;
+    background: #4f46e5;
 }
 
+/* ✅ CENTER SEMUA */
 .table th,
 .table td {
-    padding: 14px;
-    border-bottom: 1px solid #e5e7eb;
-    font-size: 14px;
-    color: #374151;
     text-align: center;
-    vertical-align: middle;
+    padding: 14px;
+    font-size: 14px;
 }
 
-.table th:nth-child(3),
-.table td:nth-child(3) {
-    text-align: left;
+.table th {
+    color: #ffffff;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
-.table tbody tr {
-    height: 90px;
+.table td {
+    border-bottom: 1px solid #e5e7eb;
+    color: #374151;
 }
 
 .table tbody tr:hover {
     background: #f1f5ff;
 }
 
+/* ================= IMAGE ================= */
 .alat-img {
     width: 55px;
     height: 55px;
     object-fit: cover;
     border-radius: 10px;
     border: 1px solid #e5e7eb;
-    display: block;
-    margin: 0 auto;
 }
 
+/* ================= BADGE ================= */
 .badge {
-    padding: 6px 14px;
+    padding: 6px 12px;
     border-radius: 20px;
     font-size: 12px;
     font-weight: 500;
@@ -121,11 +125,11 @@
     color: #991b1b;
 }
 
+/* ================= ACTION ================= */
 .action {
     display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 8px;
+    justify-content: center; /* ✅ tombol ke tengah */
+    gap: 10px;
 }
 
 .btn {
@@ -154,6 +158,8 @@
 .btn-delete:hover {
     background: #fecaca;
 }
+
+/* ================= EMPTY ================= */
 .empty {
     text-align: center;
     padding: 40px;
@@ -161,15 +167,20 @@
 }
 </style>
 
+
+<!-- ================= HEADER ================= -->
 <div class="page-header">
     <div>
         <h1>Data Alat</h1>
         <span>Daftar alat yang tersedia</span>
     </div>
-    <a href="{{ route('alat.create') }}" class="btn-add">
+    <a href="{{ route('admin.alat.create') }}" class="btn-add">
         <i class="fa-solid fa-plus"></i> Tambah Alat
     </a>
 </div>
+
+
+<!-- ================= CARD ================= -->
 <div class="card">
     <table class="table">
         <thead>
@@ -182,11 +193,14 @@
                 <th style="width:130px">Aksi</th>
             </tr>
         </thead>
+
         <tbody>
             @forelse($alats as $item)
                 <tr>
+
                     <td>{{ $loop->iteration }}</td>
 
+                    <!-- GAMBAR -->
                     <td>
                         @if($item->gambar && file_exists(public_path('storage/'.$item->gambar)))
                             <img src="{{ asset('storage/'.$item->gambar) }}" class="alat-img">
@@ -195,10 +209,13 @@
                         @endif
                     </td>
 
+                    <!-- NAMA -->
                     <td>{{ $item->nama_alat }}</td>
 
+                    <!-- JUMLAH -->
                     <td>{{ $item->jumlah }}</td>
 
+                    <!-- STATUS -->
                     <td>
                         @if($item->jumlah > 0)
                             <span class="badge available">Tersedia</span>
@@ -207,22 +224,24 @@
                         @endif
                     </td>
 
+                    <!-- AKSI -->
                     <td>
                         <div class="action">
-                            <a href="{{ route('alat.edit', $item->id) }}" class="btn btn-edit" title="Edit">
+                            <a href="{{ route('admin.alat.edit', $item->id) }}" class="btn btn-edit">
                                 <i class="fa-solid fa-pen"></i>
                             </a>
 
-                            <form action="{{ route('alat.destroy', $item->id) }}" method="POST">
+                            <form action="{{ route('admin.alat.destroy', $item->id) }}" method="POST">
                                 @csrf
                                 @method('DELETE')
-                                <button class="btn btn-delete" title="Hapus"
+                                <button class="btn btn-delete"
                                     onclick="return confirm('Yakin hapus alat ini?')">
                                     <i class="fa-solid fa-trash"></i>
                                 </button>
                             </form>
                         </div>
                     </td>
+
                 </tr>
             @empty
                 <tr>

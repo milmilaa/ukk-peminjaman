@@ -1,115 +1,116 @@
 @extends('layouts.app')
 
-@section('title','Dashboard')
+@section('title', 'Dashboard')
 
 @section('content')
 
-<style>
+@php
+    $totalAlat = $totalAlat ?? 0;
+    $peminjamanAktif = $peminjamanAktif ?? 0;
+    $pengembalianHariIni = $pengembalianHariIni ?? 0;
+    $totalPeminjaman = $totalPeminjaman ?? 0;
+    $menunggu = $menunggu ?? 0;
+    $ditolak = $ditolak ?? 0;
+    $stokRendah = $stokRendah ?? 0;           // Tambahan baru
+    $terlambat = $terlambat ?? 0;             // Tambahan ba    ru
+    $aktivitas = $aktivitas ?? collect();
+@endphp
 
+<style>
+/* ================= DASHBOARD STYLES ================= */
 .page-title {
-    margin-bottom: 30px;
+    margin-bottom: 32px;
 }
 
 .page-title h1 {
-    font-size: 28px;
-    font-weight: 600;
-    color: #1f2937;
-    margin-bottom: 6px;
+    font-size: 32px;
+    font-weight: 700;
+    color: #111827;
+    margin: 0;
 }
 
 .page-title span {
-    font-size: 14px;
+    font-size: 15px;
     color: #6b7280;
 }
 
+/* Stats Grid - Diperbesar sedikit */
 .stats-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: 22px;
-    margin-bottom: 35px;
+    grid-template-columns: repeat(auto-fit, minmax(245px, 1fr));
+    gap: 24px;
+    margin-bottom: 40px;
 }
 
 .stat-box {
-    background: linear-gradient(135deg, #ffffff, #f6f8ff);
-    border-radius: 18px;
-    padding: 22px;
+    background: linear-gradient(145deg, #ffffff, #f8fafc);
+    border-radius: 20px;
+    padding: 24px;
     display: flex;
     align-items: center;
-    gap: 18px;
-    box-shadow: 0 10px 30px rgba(59, 75, 255, 0.08);
-    transition: all .35s ease;
+    gap: 20px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06);
+    transition: all 0.3s ease;
     position: relative;
     overflow: hidden;
 }
 
-.stat-box::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(120deg, transparent, rgba(59,75,255,.08), transparent);
-    opacity: 0;
-    transition: .35s;
-}
-
-.stat-box:hover::after {
-    opacity: 1;
-}
-
 .stat-box:hover {
-    transform: translateY(-6px);
-    box-shadow: 0 18px 45px rgba(59, 75, 255, 0.18);
+    transform: translateY(-8px);
+    box-shadow: 0 15px 35px rgba(59, 75, 255, 0.12);
 }
 
 .stat-icon {
-    width: 56px;
-    height: 56px;
+    width: 58px;
+    height: 58px;
     border-radius: 16px;
     background: #eef1ff;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 22px;
     color: #3b4bff;
-    flex-shrink: 0;
+    font-size: 24px;
 }
 
 .stat-info h3 {
-    font-size: 26px;
-    font-weight: 600;
-    color: #1e293b;
+    font-size: 28px;
     margin: 0;
+    font-weight: 700;
+    color: #111827;
 }
 
 .stat-info span {
-    font-size: 13px;
+    font-size: 14px;
     color: #6b7280;
+    font-weight: 500;
 }
 
+/* Dashboard Grid */
 .dashboard-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-    gap: 25px;
-}
-.card {
-    background: #ffffff;
-    border-radius: 20px;
-    padding: 22px 24px;
-    box-shadow: 0 12px 35px rgba(0,0,0,.08);
-    transition: all .35s ease;
+    grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+    gap: 26px;
 }
 
-.card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 20px 45px rgba(0,0,0,.12);
+.card {
+    background: #ffffff;
+    border-radius: 22px;
+    padding: 26px;
+    box-shadow: 0 12px 35px rgba(0, 0, 0, 0.07);
+    height: fit-content;
 }
 
 .card h3 {
-    font-size: 17px;
+    font-size: 17.5px;
     font-weight: 600;
-    margin-bottom: 18px;
+    margin-bottom: 22px;
     color: #1f2937;
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 
+/* Activity List */
 .list-activity {
     list-style: none;
     padding: 0;
@@ -120,126 +121,149 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 14px 16px;
-    margin-bottom: 12px;
+    padding: 15px 18px;
+    margin-bottom: 10px;
     border-radius: 14px;
-    background: #f7f9ff;
-    font-size: 14px;
-    transition: .3s;
+    background: #f8fafc;
+    font-size: 14.5px;
+    transition: 0.2s;
 }
 
 .list-activity li:hover {
-    background: #eef1ff;
-    transform: translateX(6px);
+    background: #f0f4ff;
 }
 
-.list-activity li:last-child {
-    margin-bottom: 0;
-}
-
+/* Status Badge */
 .status {
-    font-size: 11px;
-    padding: 5px 12px;
-    border-radius: 30px;
+    font-size: 12.5px;
+    padding: 6px 14px;
+    border-radius: 9999px;
     font-weight: 600;
-    letter-spacing: .3px;
 }
 
-.status.wait {
-    background: #fff7e6;
-    color: #f59e0b;
-}
+.status.wait   { background: #fff7e6; color: #f59e0b; }
+.status.done   { background: #ecfdf5; color: #10b981; }
+.status.reject { background: #fee2e2; color: #ef4444; }
+.status.late   { background: #fee2e2; color: #b91c1c; }
 
-.status.done {
-    background: #ecfdf5;
-    color: #10b981;
-}
-
-@media (max-width: 768px) {
-    .page-title h1 {
-        font-size: 24px;
-    }
-
-    .stat-info h3 {
-        font-size: 22px;
-    }
+.empty {
+    text-align: center;
+    color: #9ca3af;
+    padding: 40px 20px;
+    font-style: italic;
 }
 </style>
 
+<!-- TITLE -->
 <div class="page-title">
     <h1>Dashboard</h1>
-    <span>Ringkasan aktivitas peminjaman dan pengelolaan alat</span>
+    <span>Ringkasan aktivitas peminjaman dan pengelolaan alat medis</span>
 </div>
 
+<!-- STATS GRID -->
 <div class="stats-grid">
+
     <div class="stat-box">
-        <div class="stat-icon">
-            <i class="fa-solid fa-box"></i>
-        </div>
+        <div class="stat-icon"><i class="fa-solid fa-box"></i></div>
         <div class="stat-info">
-            <h3>128</h3>
-            <span>Total Alat</span>
+            <h3>{{ $totalAlat }}</h3>
+            <span>Total Stok Alat</span>
         </div>
     </div>
 
     <div class="stat-box">
-        <div class="stat-icon">
-            <i class="fa-solid fa-handshake"></i>
-        </div>
+        <div class="stat-icon"><i class="fa-solid fa-handshake"></i></div>
         <div class="stat-info">
-            <h3>34</h3>
+            <h3>{{ $peminjamanAktif }}</h3>
             <span>Peminjaman Aktif</span>
         </div>
     </div>
 
     <div class="stat-box">
-        <div class="stat-icon">
-            <i class="fa-solid fa-rotate-left"></i>
-        </div>
+        <div class="stat-icon"><i class="fa-solid fa-clock"></i></div>
         <div class="stat-info">
-            <h3>17</h3>
+            <h3>{{ $menunggu }}</h3>
+            <span>Menunggu Persetujuan</span>
+        </div>
+    </div>
+
+    <div class="stat-box">
+        <div class="stat-icon"><i class="fa-solid fa-rotate-left"></i></div>
+        <div class="stat-info">
+            <h3>{{ $pengembalianHariIni }}</h3>
             <span>Pengembalian Hari Ini</span>
         </div>
     </div>
 
     <div class="stat-box">
-        <div class="stat-icon">
-            <i class="fa-solid fa-users"></i>
+        <div class="stat-icon"><i class="fa-solid fa-xmark"></i></div>
+        <div class="stat-info">
+            <h3>{{ $ditolak }}</h3>
+            <span>Peminjaman Ditolak</span>
+        </div>
+    </div>
+
+    <!-- Fitur Tambahan -->
+    <div class="stat-box">
+        <div class="stat-icon" style="background:#fee2e2; color:#ef4444;">
+            <i class="fa-solid fa-exclamation-triangle"></i>
         </div>
         <div class="stat-info">
-            <h3>6</h3>
-            <span>Petugas Aktif</span>
+            <h3>{{ $stokRendah }}</h3>
+            <span>Alat Stok Rendah</span>
         </div>
     </div>
+
+    <div class="stat-box">
+        <div class="stat-icon" style="background:#fee2e2; color:#b91c1c;">
+            <i class="fa-solid fa-calendar-xmark"></i>
+        </div>
+        <div class="stat-info">
+            <h3>{{ $terlambat }}</h3>
+            <span>Peminjaman Terlambat</span>
+        </div>
+    </div>
+
 </div>
 
+<!-- DASHBOARD GRID -->
 <div class="dashboard-grid">
+
+    <!-- Aktivitas Peminjaman Terbaru -->
     <div class="card">
-        <h3>Aktivitas Peminjaman Terbaru</h3>
+        <h3><i class="fa-solid fa-clock-rotate-left"></i> Aktivitas Terbaru</h3>
         <ul class="list-activity">
-            <li>
-                <span>Laptop ASUS – Andi</span>
-                <span class="status wait">Menunggu</span>
-            </li>
-            <li>
-                <span>Proyektor Epson – Budi</span>
-                <span class="status done">Disetujui</span>
-            </li>
-            <li>
-                <span>Kamera Canon – Sinta</span>
-                <span class="status done">Disetujui</span>
-            </li>
+            @forelse($aktivitas as $item)
+                <li>
+                    <span>
+                        {{ $item->alat->nama_alat ?? 'Alat tidak ditemukan' }}
+                        — {{ $item->user->name ?? 'User tidak ditemukan' }}
+                    </span>
+                    <span class="status
+                        {{ $item->status == 'menunggu' ? 'wait' : '' }}
+                        {{ $item->status == 'dipinjam' || $item->status == 'approved' ? 'done' : '' }}
+                        {{ $item->status == 'ditolak' || $item->status == 'rejected' ? 'reject' : '' }}">
+                        {{ ucfirst($item->status) }}
+                    </span>
+                </li>
+            @empty
+                <li class="empty">Belum ada aktivitas peminjaman</li>
+            @endforelse
         </ul>
     </div>
 
+    <!-- Notifikasi & Informasi -->
     <div class="card">
-        <h3>Notifikasi Sistem</h3>
+        <h3><i class="fa-solid fa-bell"></i> Notifikasi Sistem</h3>
         <ul class="list-activity">
-            <li>📌 Peminjaman baru menunggu persetujuan</li>
-            <li>📦 Alat telah dikembalikan</li>
-            <li>🧾 Laporan siap dicetak</li>
+            <li>📌 Ada <strong>{{ $menunggu }}</strong> peminjaman menunggu persetujuan</li>
+            <li>📦 {{ $pengembalianHariIni }} alat telah dikembalikan hari ini</li>
+            <li>⚠️ {{ $stokRendah }} alat memiliki stok rendah</li>
+            <li>⏰ {{ $terlambat }} peminjaman terlambat pengembalian</li>
+            <li>🧾 Laporan bulanan siap dicetak</li>
         </ul>
     </div>
+
 </div>
 
 @endsection

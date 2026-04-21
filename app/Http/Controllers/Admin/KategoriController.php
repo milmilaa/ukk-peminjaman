@@ -11,7 +11,7 @@ class KategoriController extends Controller
     // INDEX
     public function index()
     {
-        $kategoris = Kategori::all();
+        $kategoris = Kategori::orderBy('id', 'asc')->get();
         return view('kategori.index', compact('kategoris'));
     }
 
@@ -32,7 +32,8 @@ class KategoriController extends Controller
             'nama' => $request->nama
         ]);
 
-        return redirect()->route('kategori.index')
+        // ✅ FIX: tambah prefix admin
+        return redirect()->route('admin.kategori.index')
             ->with('success', 'Kategori berhasil ditambahkan');
     }
 
@@ -55,7 +56,8 @@ class KategoriController extends Controller
             'nama' => $request->nama,
         ]);
 
-        return redirect()->route('kategori.index')
+        // ✅ FIX
+        return redirect()->route('admin.kategori.index')
             ->with('success', 'Kategori berhasil diperbarui');
     }
 
@@ -64,7 +66,8 @@ class KategoriController extends Controller
     {
         Kategori::findOrFail($id)->delete();
 
-        return redirect()->route('kategori.index')
+        // ✅ FIX
+        return redirect()->route('admin.kategori.index')
             ->with('success', 'Kategori berhasil dihapus');
     }
 }

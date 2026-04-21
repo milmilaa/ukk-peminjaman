@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Siswa;
+namespace App\Http\Controllers\Medis;
 
 use App\Http\Controllers\Controller;
 use App\Models\Peminjaman;

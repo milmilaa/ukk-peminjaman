@@ -20,9 +20,15 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'foto',
         'role',
-        'status',  
+        'status',
     ];
+
+    /**
+     * Tambahkan keterangan ke JSON (opsional tapi bagus)
+     */
+    protected $appends = ['keterangan'];
 
     /**
      * The attributes that should be hidden for serialization.
@@ -43,4 +49,17 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
     ];
+
+    /**
+     * 🔥 KETERANGAN OTOMATIS BERDASARKAN ROLE
+     */
+    public function getKeteranganAttribute()
+    {
+        return match($this->role) {
+            'admin'   => 'IT / Pengelola Sistem',
+            'petugas' => 'Gudang Alat',
+            'medis'   => 'Tenaga Medis',
+            default   => '-',
+        };
+    }
 }

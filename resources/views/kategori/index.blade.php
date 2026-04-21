@@ -64,22 +64,27 @@
         width: 100%;
         border-collapse: collapse;
         margin-top: 10px;
+        overflow: hidden;
+        border-radius: 10px;
     }
 
+    /* ✅ HEADER CENTER */
     .table thead {
-        background: #f9fafb;
+        background: #4f46e5;
     }
 
-    .table th {
-        text-align: left;
+    .table thead th {
+        text-align: center;
         padding: 14px;
         font-size: 13px;
-        color: #374151;
+        color: #ffffff;
         text-transform: uppercase;
         letter-spacing: 0.5px;
     }
 
+    /* ✅ ISI JUGA CENTER */
     .table td {
+        text-align: center;
         padding: 14px;
         border-bottom: 1px solid #e5e7eb;
         font-size: 14px;
@@ -88,10 +93,18 @@
 
     .table tbody tr:hover {
         background: #f1f5ff;
+        transition: 0.2s;
+    }
+
+    .nama-kategori {
+        font-weight: 500;
+        color: #111827;
     }
 
     .action {
         display: flex;
+        justify-content: center;
+        align-items: center;
         gap: 10px;
     }
 
@@ -102,6 +115,7 @@
         text-decoration: none;
         display: inline-flex;
         align-items: center;
+        justify-content: center;
         gap: 6px;
         transition: 0.3s;
         border: none;
@@ -138,7 +152,8 @@
         <h1>Data Kategori</h1>
         <span>Daftar kategori alat peminjaman</span>
     </div>
-    <a href="{{ route('kategori.create') }}" class="btn-add">
+
+    <a href="{{ route('admin.kategori.create') }}" class="btn-add">
         <i class="fa-solid fa-plus"></i> Tambah Kategori
     </a>
 </div>
@@ -147,26 +162,34 @@
     <table class="table">
         <thead>
             <tr>
-                <th>No</th>
+                <th style="width: 60px;">No</th>
                 <th>Nama Kategori</th>
-                <th>Aksi</th>
+                <th style="width: 120px;">Aksi</th>
             </tr>
         </thead>
+
         <tbody>
             @forelse ($kategoris as $item)
                 <tr>
                     <td>{{ $loop->iteration }}</td>
-                    <td>{{ $item->nama }}</td>
+
+                    <td>
+                        <span class="nama-kategori">
+                            {{ $item->nama }}
+                        </span>
+                    </td>
+
                     <td>
                         <div class="action">
-                            <a href="{{ route('kategori.edit', $item->id) }}" class="btn btn-edit">
+                            <a href="{{ route('admin.kategori.edit', $item->id) }}" class="btn btn-edit">
                                 <i class="fa-solid fa-pen"></i>
                             </a>
 
-                            <form action="{{ route('kategori.destroy', $item->id) }}" method="POST">
+                            <form action="{{ route('admin.kategori.destroy', $item->id) }}" method="POST">
                                 @csrf
                                 @method('DELETE')
-                                <button class="btn btn-delete" onclick="return confirm('Yakin hapus kategori ini?')">
+                                <button class="btn btn-delete"
+                                    onclick="return confirm('Yakin hapus kategori ini?')">
                                     <i class="fa-solid fa-trash"></i>
                                 </button>
                             </form>

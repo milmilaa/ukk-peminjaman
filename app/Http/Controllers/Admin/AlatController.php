@@ -11,7 +11,7 @@ class AlatController extends Controller
 {
     public function index()
     {
-        $alats = Alat::latest()->get();
+        $alats = Alat::orderBy('id', 'asc')->get();
         return view('alat.index', compact('alats'));
     }
 
@@ -30,22 +30,22 @@ class AlatController extends Controller
             'gambar'      => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
         ]);
 
-        $data = $request->only(['nama_alat', 'kategori_id', 'jumlah']);
+        $data = $request->only(['nama_alat','kategori_id','jumlah']);
 
         if ($request->hasFile('gambar')) {
-            $data['gambar'] = $request->file('gambar')->store('alat', 'public');
+            $data['gambar'] = $request->file('gambar')->store('alat','public');
         }
 
         Alat::create($data);
 
-        return redirect()->route('alat.index')
-            ->with('success', 'Alat berhasil ditambahkan');
+        return redirect()->route('admin.alat.index')
+            ->with('success','Alat berhasil ditambahkan');
     }
 
     public function edit(Alat $alat)
     {
         $kategoris = Kategori::all();
-        return view('alat.edit', compact('alat', 'kategoris'));
+        return view('alat.edit', compact('alat','kategoris'));
     }
 
     public function update(Request $request, Alat $alat)
@@ -57,23 +57,23 @@ class AlatController extends Controller
             'gambar'      => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
         ]);
 
-        $data = $request->only(['nama_alat', 'kategori_id', 'jumlah']);
+        $data = $request->only(['nama_alat','kategori_id','jumlah']);
 
         if ($request->hasFile('gambar')) {
-            $data['gambar'] = $request->file('gambar')->store('alat', 'public');
+            $data['gambar'] = $request->file('gambar')->store('alat','public');
         }
 
         $alat->update($data);
 
-        return redirect()->route('alat.index')
-            ->with('success', 'Alat berhasil diperbarui');
+        return redirect()->route('admin.alat.index')
+            ->with('success','Alat berhasil diperbarui');
     }
 
     public function destroy(Alat $alat)
     {
         $alat->delete();
 
-        return redirect()->route('alat.index')
-            ->with('success', 'Alat berhasil dihapus');
+        return redirect()->route('admin.alat.index')
+            ->with('success','Alat berhasil dihapus');
     }
 }

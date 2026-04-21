@@ -67,27 +67,26 @@
     }
 
     .table thead {
-        background: #f9fafb;
+        background: #4f46e5;
+    }
+
+    /* ✅ CENTER SEMUA */
+    .table th,
+    .table td {
+        text-align: center;
+        padding: 14px;
+        font-size: 14px;
     }
 
     .table th {
-        text-align: left;
-        padding: 14px;
-        font-size: 13px;
-        color: #374151;
+        color: #ffffff;
         text-transform: uppercase;
         letter-spacing: 0.5px;
     }
 
     .table td {
-        padding: 14px;
         border-bottom: 1px solid #e5e7eb;
-        font-size: 14px;
         color: #374151;
-    }
-
-    .table tbody tr {
-        transition: 0.3s;
     }
 
     .table tbody tr:hover {
@@ -108,7 +107,12 @@
         color: #1e3a8a;
     }
 
-    .badge.user {
+    .badge.petugas {
+        background: #fef9c3;
+        color: #854d0e;
+    }
+
+    .badge.medis {
         background: #dcfce7;
         color: #166534;
     }
@@ -123,8 +127,10 @@
         color: #991b1b;
     }
 
+    /* ✅ AKSI DI TENGAH */
     .action {
         display: flex;
+        justify-content: center;
         gap: 10px;
     }
 
@@ -132,11 +138,6 @@
         padding: 8px 12px;
         border-radius: 8px;
         font-size: 13px;
-        text-decoration: none;
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        transition: 0.3s;
         border: none;
         cursor: pointer;
     }
@@ -146,17 +147,9 @@
         color: #854d0e;
     }
 
-    .btn-edit:hover {
-        background: #fde047;
-    }
-
     .btn-delete {
         background: #fee2e2;
         color: #991b1b;
-    }
-
-    .btn-delete:hover {
-        background: #fecaca;
     }
 
     .empty {
@@ -171,7 +164,7 @@
         <h1>Data User</h1>
         <span>Daftar pengguna yang terdaftar dalam sistem</span>
     </div>
-    <a href="{{ route('users.create') }}" class="btn-add">
+    <a href="{{ route('admin.users.create') }}" class="btn-add">
         <i class="fa-solid fa-user-plus"></i> Tambah User
     </a>
 </div>
@@ -184,6 +177,7 @@
                 <th>Nama</th>
                 <th>Email</th>
                 <th>Role</th>
+                <th>Keterangan</th>
                 <th>Status</th>
                 <th>Aksi</th>
             </tr>
@@ -191,27 +185,40 @@
         <tbody>
             @forelse($users as $user)
                 <tr>
-            
-                    <td>{{ $user->id }}</td>
+
+                    <td>{{ $loop->iteration }}</td>
                     <td>{{ $user->name }}</td>
                     <td>{{ $user->email }}</td>
+
                     <td>
                         <span class="badge {{ $user->role }}">
                             {{ $user->role }}
                         </span>
                     </td>
+
+                    <td>
+                        @if($user->role == 'admin')
+                            IT / Pengelola Sistem
+                        @elseif($user->role == 'petugas')
+                            Gudang Alat
+                        @elseif($user->role == 'medis')
+                            Tenaga Medis
+                        @endif
+                    </td>
+
                     <td>
                         <span class="badge {{ $user->status }}">
                             {{ $user->status }}
                         </span>
                     </td>
+
                     <td>
                         <div class="action">
-                            <a href="{{ route('users.edit', $user->id) }}" class="btn btn-edit">
+                            <a href="{{ route('admin.users.edit', $user->id) }}" class="btn btn-edit">
                                 <i class="fa-solid fa-pen"></i>
                             </a>
 
-                            <form action="{{ route('users.destroy', $user->id) }}" method="POST">
+                            <form action="{{ route('admin.users.destroy', $user->id) }}" method="POST">
                                 @csrf
                                 @method('DELETE')
                                 <button class="btn btn-delete"
@@ -221,10 +228,11 @@
                             </form>
                         </div>
                     </td>
+
                 </tr>
             @empty
                 <tr>
-                    <td colspan="6">
+                    <td colspan="7">
                         <div class="empty">
                             <i class="fa-solid fa-users-slash fa-2x"></i>
                             <p>Data user belum tersedia</p>

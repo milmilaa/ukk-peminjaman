@@ -15,11 +15,6 @@ class Pengembalian extends Model
         'peminjaman_id',
         'tanggal_kembali',
         'kondisi',
-        'catatan',
+        'keterangan',
     ];
-
-    public function peminjaman()
-    {
-        return $this->belongsTo(Peminjaman::class);
-    }
 }

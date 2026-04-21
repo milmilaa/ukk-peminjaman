@@ -11,26 +11,27 @@ return new class extends Migration
      * Run the migrations.
      */
     public function up(): void
-{
-    Schema::table('users', function (Blueprint $table) {
+    {
+        Schema::table('users', function (Blueprint $table) {
 
-        if (!Schema::hasColumn('users', 'role')) {
-            $table->enum('role', ['admin', 'petugas', 'siswa'])
-                  ->after('password');
-        }
+            if (!Schema::hasColumn('users', 'role')) {
+                $table->enum('role', ['admin', 'petugas', 'medis'])
+                      ->after('password');
+            }
 
-        if (!Schema::hasColumn('users', 'status')) {
-            $table->string('status')
-                  ->default('active')
-                  ->after('role');
-        }
-    });
+            if (!Schema::hasColumn('users', 'status')) {
+                $table->string('status')
+                      ->default('active')
+                      ->after('role');
+            }
+        });
 
-    DB::statement(
-        "ALTER TABLE users
-         MODIFY role ENUM('admin','petugas','siswa') NOT NULL"
-    );
-}
+        // ✅ PERBAIKAN DI SINI (ganti siswa → medis)
+        DB::statement(
+            "ALTER TABLE users
+             MODIFY role ENUM('admin','petugas','medis') NOT NULL"
+        );
+    }
 
     /**
      * Reverse the migrations.

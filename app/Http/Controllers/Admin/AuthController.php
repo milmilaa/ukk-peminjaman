@@ -21,26 +21,31 @@ class AuthController extends Controller
      */
     public function loginProcess(Request $request)
     {
-        $request->validate([
-            'email'    => 'required|email',
-            'password' => 'required'
+        $credentials = $request->validate([
+            'email'    => ['required', 'email'],
+            'password' => ['required']
         ]);
 
-        // attempt login
-        if (Auth::attempt($request->only('email', 'password'))) {
+        /**
+         * ATTEMPT LOGIN
+         */
+        if (Auth::attempt($credentials)) {
+
+            // WAJIB regenerate session (security)
             $request->session()->regenerate();
 
-            $user = auth()->user();
+            $user = Auth::user();
 
-            // ❗ CEK STATUS USER
-            if ($user->status !== 'active') {
+            /**
+             * CEK STATUS AKUN
+             */
+            if (!$user || $user->status !== 'active') {
                 Auth::logout();
                 return back()->with('error', 'Akun Anda tidak aktif');
             }
 
             /**
-             * JANGAN redirect berdasarkan role di sini
-             * Karena SUDAH ADA di route /dashboard
+             * REDIRECT GLOBAL DASHBOARD
              */
             return redirect()->route('dashboard');
         }
@@ -49,11 +54,12 @@ class AuthController extends Controller
     }
 
     /**
-     * Logout
+     * LOGOUT
      */
     public function logout(Request $request)
     {
         Auth::logout();
+
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
