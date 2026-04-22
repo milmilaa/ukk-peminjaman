@@ -16,7 +16,7 @@ return new class extends Migration
                 ->onDelete('cascade');
 
             $table->foreignId('alat_id')
-                ->constrained('alats') 
+                ->constrained('alat')
                 ->onDelete('cascade');
 
             $table->integer('qty');

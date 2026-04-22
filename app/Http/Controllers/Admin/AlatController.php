@@ -11,8 +11,8 @@ class AlatController extends Controller
 {
     public function index()
     {
-        $alats = Alat::orderBy('id', 'asc')->get();
-        return view('alat.index', compact('alats'));
+        $alat = Alat::orderBy('id', 'asc')->get();
+        return view('alat.index', compact('alat'));
     }
 
     public function create()

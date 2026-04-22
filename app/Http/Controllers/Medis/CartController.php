@@ -138,4 +138,17 @@ class CartController extends Controller
             'total_qty' => $totalQty
         ]);
     }
+    public function store(Request $request)
+{
+    $selected = $request->selected_items;
+
+    if(!$selected){
+        return back()->with('error','Pilih minimal 1 barang');
+    }
+
+    // proses simpan ke peminjaman...
+
+    return back()->with('success','Peminjaman berhasil diajukan!');
+}
+
 }

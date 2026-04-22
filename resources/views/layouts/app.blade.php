@@ -444,7 +444,7 @@ MENU PETUGAS
                 </div>
                 @endif
 
-                <div class="nav-icon" onclick="alert('Fitur Notifikasi akan segera hadir')">
+                <div class="nav-icon" onclick="window.location='{{ route('notif.page') }}'">
                     <i class="fa-solid fa-bell"></i>
                     @if($notifCount > 0)
                         <span class="badge">{{ $notifCount }}</span>
@@ -452,7 +452,7 @@ MENU PETUGAS
                 </div>
 
                 <div class="nav-icon" onclick="toggleDarkMode()" id="darkModeIcon">
-                    <i class="fa-solid fa-moon"></i>
+                    <i class="fa-solid fa-moon"></i> 
                 </div>
 
                 <div class="nav-icon" onclick="toggleFullscreen()">

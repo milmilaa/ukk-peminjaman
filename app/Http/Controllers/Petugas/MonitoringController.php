@@ -9,69 +9,45 @@ use App\Models\Pengembalian;
 
 class MonitoringController extends Controller
 {
+    // ========================
+    // DASHBOARD
+    // ========================
     public function dashboard()
     {
-        // ========================
-        // TOTAL ALAT
-        // ========================
         $totalAlat = Alat::sum('jumlah');
 
-        // ========================
-        // ALAT TERSEDIA
-        // ========================
         $alatTersedia = Alat::where('jumlah', '>', 0)->sum('jumlah');
 
-        // ========================
-        // PEMINJAMAN AKTIF
-        // ========================
         $peminjamanAktif = Peminjaman::whereIn('status', [
             'dipinjam',
             'menunggu',
             'approved'
         ])->count();
 
-        // ========================
-        // STATUS PEMINJAMAN
-        // ========================
         $menunggu = Peminjaman::where('status', 'menunggu')->count();
         $ditolak = Peminjaman::where('status', 'ditolak')->count();
         $terlambat = Peminjaman::where('status', 'terlambat')->count();
 
-        // ========================
-        // PENGEMBALIAN HARI INI
-        // ========================
         $pengembalianHariIni = Pengembalian::whereDate('created_at', today())->count();
 
-        // ========================
-        // STOK RENDAH
-        // ========================
         $stokRendah = Alat::where('jumlah', '<=', 3)->count();
 
-        // ========================
-        // AKTIVITAS TERBARU
-        // ========================
-        $aktivitas = Peminjaman::with(['alat', 'user'])
+        $aktivitas = Peminjaman::with(['user', 'detail.alat'])
             ->latest()
             ->take(6)
             ->get();
 
-        // ========================
-        // ALAT PALING SERING DIPINJAM (FIX AMAN)
-        // ========================
-        // ❗ Ini versi TANPA ERROR walaupun struktur DB belum jelas
-        $alatPopuler = Alat::select('alats.*')
+        // 🔥 FIX UTAMA: pakai detail_peminjaman, bukan peminjaman.alat_id
+        $alatPopuler = Alat::select('alat.*')
             ->selectRaw('(
                 SELECT COUNT(*)
-                FROM peminjaman
-                WHERE peminjaman.alat_id = alats.id
+                FROM detail_peminjaman
+                WHERE detail_peminjaman.alat_id = alat.id
             ) as peminjaman_count')
             ->orderByDesc('peminjaman_count')
             ->take(5)
             ->get();
 
-        // ========================
-        // RETURN VIEW
-        // ========================
         return view('petugas.dashboard', compact(
             'totalAlat',
             'alatTersedia',
@@ -87,7 +63,19 @@ class MonitoringController extends Controller
     }
 
     // ========================
-    // SETUJUI PEMINJAMAN
+    // HALAMAN SETUJUI PEMINJAMAN
+    // ========================
+    public function menyetujui()
+    {
+        $peminjaman = Peminjaman::with(['user', 'detail.alat'])
+            ->latest()
+            ->get();
+
+        return view('petugas.peminjaman', compact('peminjaman'));
+    }
+
+    // ========================
+    // SETUJUI
     // ========================
     public function setujui($id)
     {
@@ -97,11 +85,11 @@ class MonitoringController extends Controller
             'status' => 'dipinjam'
         ]);
 
-        return back()->with('success', 'Disetujui');
+        return back()->with('success', 'Peminjaman disetujui');
     }
 
     // ========================
-    // TOLAK PEMINJAMAN
+    // TOLAK
     // ========================
     public function tolak($id)
     {
@@ -111,6 +99,19 @@ class MonitoringController extends Controller
             'status' => 'ditolak'
         ]);
 
-        return back()->with('success', 'Ditolak');
+        return back()->with('success', 'Peminjaman ditolak');
+    }
+
+    // ========================
+    // HALAMAN PENGEMBALIAN
+    // ========================
+    public function pengembalian()
+    {
+        $peminjaman = Peminjaman::with(['user', 'detail.alat'])
+            ->where('status', 'dipinjam')
+            ->latest()
+            ->get();
+
+        return view('petugas.pengembalian', compact('peminjaman'));
     }
 }

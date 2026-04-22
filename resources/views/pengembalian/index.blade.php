@@ -52,12 +52,15 @@
 
 <div class="page-header">
     <h1>Data Pengembalian</h1>
-    <a href="{{ route('pengembalian.create') }}" class="btn-add">
+
+    {{-- FIX ROUTE ADMIN PREFIX --}}
+    <a href="{{ route('admin.pengembalian.create') }}" class="btn-add">
         + Tambah Pengembalian
     </a>
 </div>
 
 <div class="card">
+
     @if(session('success'))
         <div style="background:#dcfce7;color:#166534;padding:10px 14px;border-radius:8px;margin-bottom:15px">
             {{ session('success') }}
@@ -75,15 +78,24 @@
                 <th>Kondisi</th>
             </tr>
         </thead>
+
         <tbody>
             @forelse($pengembalians as $item)
                 <tr>
                     <td>{{ $loop->iteration }}</td>
-                    <td>{{ $item->peminjaman->user->name }}</td>
-                    <td>{{ $item->peminjaman->alat->nama }}</td>
-                    <td>{{ $item->peminjaman->jumlah }}</td>
-                    <td>{{ $item->tanggal_kembali }}</td>
-                    <td>{{ $item->kondisi }}</td>
+
+                    {{-- SAFE ACCESS BIAR TIDAK ERROR --}}
+                    <td>{{ $item->peminjaman->user->name ?? '-' }}</td>
+                    <td>{{ $item->peminjaman->alat->nama_alat ?? '-' }}</td>
+                    <td>{{ $item->peminjaman->jumlah ?? '-' }}</td>
+
+                    <td>
+                        {{ $item->tanggal_kembali
+                            ? \Carbon\Carbon::parse($item->tanggal_kembali)->format('d-m-Y')
+                            : '-' }}
+                    </td>
+
+                    <td>{{ $item->kondisi ?? '-' }}</td>
                 </tr>
             @empty
                 <tr>
@@ -94,6 +106,7 @@
             @endforelse
         </tbody>
     </table>
+
 </div>
 
 @endsection

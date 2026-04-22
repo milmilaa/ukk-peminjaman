@@ -12,33 +12,15 @@ use App\Models\Peminjaman;
 class DashboardController extends Controller
 {
     public function index()
-    {
-        // ========================
-        // TOTAL ALAT (STOK)
-        // ========================
-        $totalAlat = Alat::sum('jumlah');
+{
+    $alat = \App\Models\Alat::all();
 
-        // ========================
-        // LIST ALAT TERBARU / TERSEDIA
-        // ========================
-        $alat = Alat::latest()->get();
+    // 🔥 ambil riwayat + relasi
+    $peminjaman = \App\Models\Peminjaman::with('detail.alat')
+        ->where('user_id', auth()->id())
+        ->latest()
+        ->get();
 
-        // ========================
-        // PEMINJAMAN USER MEDIS (opsional tapi bagus)
-        // ========================
-        $peminjamanSaya = Peminjaman::with(['alat'])
-            ->where('user_id', auth()->id())
-            ->latest()
-            ->take(5)
-            ->get();
-
-        // ========================
-        // RETURN VIEW
-        // ========================
-        return view('medis.dashboard', [
-            'totalAlat' => $totalAlat,
-            'alat' => $alat,
-            'peminjamanSaya' => $peminjamanSaya,
-        ]);
-    }
+    return view('medis.dashboard', compact('alat','peminjaman'));
+}
 }

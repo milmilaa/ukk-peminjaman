@@ -5,7 +5,7 @@ namespace App\Exports;
 use App\Models\Peminjaman;
 use Maatwebsite\Excel\Concerns\FromCollection;
 
-class LaporanExport implements FromCollection
+class PeminjamanExport implements FromCollection
 {
     public function collection()
     {

@@ -195,7 +195,7 @@
         </thead>
 
         <tbody>
-            @forelse($alats as $item)
+            @forelse($alat as $item)
                 <tr>
 
                     <td>{{ $loop->iteration }}</td>

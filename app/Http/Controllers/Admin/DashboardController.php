@@ -66,11 +66,11 @@ class DashboardController extends Controller
         // ========================
         // ALAT PALING SERING DIPINJAM (FIX AMAN TANPA RELASI)
         // ========================
-        $alatPopuler = Alat::select('alats.*')
+        $alatPopuler = Alat::select('alat.*')
             ->selectRaw('(
                 SELECT COUNT(*)
                 FROM peminjaman
-                WHERE peminjaman.alat_id = alats.id
+                WHERE peminjaman.alat_id = alat.id
             ) as peminjaman_count')
             ->orderByDesc('peminjaman_count')
             ->take(5)

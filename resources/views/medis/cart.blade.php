@@ -6,28 +6,19 @@
 
 @php
     $cart = $cart ?? [];
-    $totalItem = count($cart);
-    $totalQty = 0;
-
-    foreach($cart as $c){
-        $totalQty += $c['qty'] ?? 0;
-    }
 @endphp
 
+{{-- ✅ ALERT SUKSES --}}
+@if(session('success'))
+<div style="background:#dcfce7;color:#166534;padding:12px 16px;border-radius:10px;margin-bottom:15px;">
+    {{ session('success') }}
+</div>
+@endif
+
 <style>
-.page-title {
-    margin-bottom: 20px;
-}
-
-.page-title h1 {
-    font-size: 26px;
-    font-weight: 600;
-}
-
-.page-title span {
-    font-size: 14px;
-    color: #6b7280;
-}
+.page-title { margin-bottom: 20px; }
+.page-title h1 { font-size: 26px; font-weight: 600; }
+.page-title span { font-size: 14px; color: #6b7280; }
 
 .cart-container {
     display: grid;
@@ -35,7 +26,7 @@
     gap: 20px;
 }
 
-/* ================= LIST ================= */
+/* LIST */
 .cart-list {
     background: white;
     border-radius: 16px;
@@ -59,15 +50,7 @@
     border-radius: 10px;
 }
 
-.cart-info {
-    flex: 1;
-}
-
-.cart-info h4 {
-    margin: 0;
-    font-size: 16px;
-    font-weight: 600;
-}
+.cart-info { flex: 1; }
 
 .qty-control {
     display: flex;
@@ -83,12 +66,6 @@
     background: #eef1ff;
     border-radius: 6px;
     cursor: pointer;
-    font-weight: bold;
-}
-
-.qty-number {
-    min-width: 20px;
-    text-align: center;
 }
 
 .btn-remove {
@@ -98,19 +75,13 @@
     padding: 7px 10px;
     border-radius: 8px;
     cursor: pointer;
-    transition: 0.2s;
 }
 
-.btn-remove:hover {
-    background: #dc2626;
-}
-
-/* ================= SUMMARY ================= */
+/* SUMMARY + FORM */
 .summary {
     background: white;
     border-radius: 16px;
     padding: 20px;
-    height: fit-content;
     box-shadow: 0 8px 20px rgba(0,0,0,0.05);
 }
 
@@ -118,9 +89,24 @@
     margin-bottom: 15px;
 }
 
-.summary p {
-    font-size: 14px;
-    margin: 5px 0;
+.form-group {
+    margin-bottom: 12px;
+}
+
+.form-group label {
+    font-size: 13px;
+    font-weight: 500;
+    display: block;
+    margin-bottom: 4px;
+}
+
+.form-group input,
+.form-group textarea {
+    width: 100%;
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid #e5e7eb;
+    font-size: 13px;
 }
 
 .btn-checkout {
@@ -132,7 +118,6 @@
     border-radius: 10px;
     border: none;
     cursor: pointer;
-    font-weight: 500;
 }
 
 .empty {
@@ -142,54 +127,55 @@
 }
 </style>
 
-{{-- ================= TITLE ================= --}}
 <div class="page-title">
     <h1>Keranjang Saya</h1>
-    <span>Daftar alat yang akan dipinjam</span>
+    <span>Pilih alat & isi form peminjaman</span>
 </div>
+
+<form action="{{ route('medis.peminjaman.store') }}" method="POST">
+@csrf
 
 <div class="cart-container">
 
-    {{-- ================= LIST CART ================= --}}
+    {{-- ================= LIST ================= --}}
     <div class="cart-list">
 
         @forelse($cart as $item)
 
+        @php
+            $image = (!empty($item['gambar']) && file_exists(public_path('storage/'.$item['gambar'])))
+                ? asset('storage/'.$item['gambar'])
+                : asset('images/no-image.png');
+        @endphp
+
         <div class="cart-item">
 
-            <img src="{{ !empty($item['gambar']) ? asset('storage/'.$item['gambar']) : 'https://via.placeholder.com/150' }}">
+            {{-- CHECKBOX --}}
+            <input type="checkbox" name="selected_items[]" value="{{ $item['id'] }}" class="check-item">
+
+            <img src="{{ $image }}">
 
             <div class="cart-info">
-                <h4>{{ $item['nama_alat'] ?? 'Nama tidak tersedia' }}</h4>
+                <h4>{{ $item['nama_alat'] }}</h4>
 
-                {{-- 🔥 QTY CONTROL --}}
                 <div class="qty-control">
-
-                    {{-- KURANG --}}
                     <form action="{{ route('medis.cart.decrease',$item['id']) }}" method="POST">
                         @csrf
                         <button class="qty-btn">-</button>
                     </form>
 
-                    <div class="qty-number">
-                        {{ $item['qty'] ?? 0 }}
-                    </div>
+                    <span>{{ $item['qty'] }}</span>
 
-                    {{-- TAMBAH --}}
                     <form action="{{ route('medis.cart.increase',$item['id']) }}" method="POST">
                         @csrf
                         <button class="qty-btn">+</button>
                     </form>
-
                 </div>
             </div>
 
-            {{-- HAPUS --}}
             <form action="{{ route('medis.cart.remove',$item['id']) }}" method="POST">
                 @csrf
-                <button class="btn-remove">
-                    <i class="fa fa-trash"></i>
-                </button>
+                <button class="btn-remove">🗑</button>
             </form>
 
         </div>
@@ -200,29 +186,70 @@
 
     </div>
 
-    {{-- ================= SUMMARY ================= --}}
+    {{-- ================= SUMMARY + FORM ================= --}}
     <div class="summary">
+
+        <h3>Form Peminjaman</h3>
+
+        {{-- FORM INPUT --}}
+        <div class="form-group">
+            <label>Keperluan</label>
+            <textarea name="keperluan" required placeholder="Contoh: Pemeriksaan pasien..."></textarea>
+        </div>
+
+        <div class="form-group">
+            <label>Tanggal Pinjam</label>
+            <input type="date" name="tanggal_pinjam" required>
+        </div>
+
+        <div class="form-group">
+            <label>Tanggal Kembali</label>
+            <input type="date" name="tanggal_kembali" required>
+        </div>
+
+        <hr style="margin:15px 0;">
 
         <h3>Ringkasan</h3>
 
-        <p>Total Jenis Barang: <b>{{ $totalItem }}</b></p>
-        <p>Total Quantity: <b>{{ $totalQty }}</b></p>
+        <p>Total Dipilih: <b id="totalItem">0</b></p>
+        <p>Total Qty: <b id="totalQty">0</b></p>
 
-        @if($totalItem > 0)
-        <form action="{{ route('medis.peminjaman.store') }}" method="POST">
-            @csrf
-            <button class="btn-checkout">
-                <i class="fa fa-check"></i> Ajukan Peminjaman
-            </button>
-        </form>
-        @else
-        <button class="btn-checkout" disabled style="background:#ccc;cursor:not-allowed;">
-            Keranjang Kosong
+        <button class="btn-checkout">
+            ✔ Ajukan Peminjaman
         </button>
-        @endif
 
     </div>
 
 </div>
+
+</form>
+
+{{-- ================= SCRIPT ================= --}}
+<script>
+const checkboxes = document.querySelectorAll('.check-item');
+const totalItemEl = document.getElementById('totalItem');
+const totalQtyEl = document.getElementById('totalQty');
+
+checkboxes.forEach(cb => {
+    cb.addEventListener('change', hitung);
+});
+
+function hitung(){
+    let totalItem = 0;
+    let totalQty = 0;
+
+    checkboxes.forEach(cb => {
+        if(cb.checked){
+            totalItem++;
+
+            let qty = cb.closest('.cart-item').querySelector('.qty-control span').innerText;
+            totalQty += parseInt(qty);
+        }
+    });
+
+    totalItemEl.innerText = totalItem;
+    totalQtyEl.innerText = totalQty;
+}
+</script>
 
 @endsection

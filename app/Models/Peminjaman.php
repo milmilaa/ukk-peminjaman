@@ -9,11 +9,13 @@ class Peminjaman extends Model
     protected $table = 'peminjaman';
 
     protected $fillable = [
-        'alat_id',
-        'user_id',
-        'status',
-        'tanggal_pinjam',
-    ];
+ 'alat_id',
+ 'user_id',
+ 'jumlah',
+ 'status',
+ 'tanggal_pinjam',
+ 'tanggal_kembali',
+];
 
     public function alat()
 {
@@ -24,4 +26,9 @@ class Peminjaman extends Model
     {
         return $this->belongsTo(User::class, 'user_id');
     }
+
+    public function detail()
+{
+    return $this->hasMany(\App\Models\DetailPeminjaman::class);
+}
 }

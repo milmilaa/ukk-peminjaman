@@ -7,22 +7,31 @@ use App\Models\Peminjaman;
 use App\Models\Alat;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\PeminjamanExport;
 
 class PeminjamanController extends Controller
 {
+    /* ================= INDEX ================= */
     public function index()
     {
-        $peminjamans = Peminjaman::with(['user', 'alat'])->latest()->get();
+        $peminjamans = Peminjaman::with(['user', 'alat'])
+            ->latest()
+            ->get();
+
         return view('peminjaman.index', compact('peminjamans'));
     }
 
+    /* ================= CREATE ================= */
     public function create()
     {
-        $users = User::where('role', 'siswa')->get();
+        $users = User::where('role', 'medis')->get();
         $alats = Alat::all();
+
         return view('peminjaman.create', compact('users', 'alats'));
     }
 
+    /* ================= STORE ================= */
     public function store(Request $request)
     {
         $request->validate([
@@ -36,7 +45,9 @@ class PeminjamanController extends Controller
         $alat = Alat::findOrFail($request->alat_id);
 
         if ($request->jumlah > $alat->jumlah) {
-            return back()->withErrors(['jumlah' => 'Jumlah melebihi stok alat']);
+            return back()->withErrors([
+                'jumlah' => 'Jumlah melebihi stok alat'
+            ]);
         }
 
         Peminjaman::create([
@@ -50,16 +61,19 @@ class PeminjamanController extends Controller
 
         $alat->decrement('jumlah', $request->jumlah);
 
-        return redirect()->route('peminjaman.index')
+        return redirect()->route('admin.peminjaman.index')
             ->with('success', 'Peminjaman berhasil ditambahkan');
     }
 
+    /* ================= EDIT ================= */
     public function edit($id)
     {
         $peminjaman = Peminjaman::findOrFail($id);
+
         return view('peminjaman.edit', compact('peminjaman'));
     }
 
+    /* ================= UPDATE ================= */
     public function update(Request $request, $id)
     {
         $peminjaman = Peminjaman::findOrFail($id);
@@ -68,7 +82,11 @@ class PeminjamanController extends Controller
             'status' => 'required'
         ]);
 
-        if ($request->status === 'dikembalikan' && $peminjaman->status !== 'dikembalikan') {
+        // kalau dikembalikan, stok balik
+        if (
+            $request->status === 'dikembalikan' &&
+            $peminjaman->status !== 'dikembalikan'
+        ) {
             $peminjaman->alat->increment('jumlah', $peminjaman->jumlah);
         }
 
@@ -76,10 +94,11 @@ class PeminjamanController extends Controller
             'status' => $request->status
         ]);
 
-        return redirect()->route('peminjaman.index')
+        return redirect()->route('admin.peminjaman.index')
             ->with('success', 'Status peminjaman diperbarui');
     }
 
+    /* ================= DELETE ================= */
     public function destroy($id)
     {
         $peminjaman = Peminjaman::findOrFail($id);
@@ -91,5 +110,14 @@ class PeminjamanController extends Controller
         $peminjaman->delete();
 
         return back()->with('success', 'Data peminjaman dihapus');
+    }
+
+    /* ================= EXPORT EXCEL (FIX ERROR KAMU) ================= */
+    public function exportExcel()
+    {
+        return Excel::download(
+            new PeminjamanExport,
+            'peminjaman.xlsx'
+        );
     }
 }

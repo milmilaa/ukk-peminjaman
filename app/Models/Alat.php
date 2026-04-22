@@ -10,7 +10,7 @@ class Alat extends Model
     use HasFactory;
 
     // ✅ sesuaikan dengan nama tabel di database
-    protected $table = 'alats';
+    protected $table = 'alat';
 
     protected $fillable = [
         'nama_alat',

@@ -12,15 +12,10 @@ return new class extends Migration
     public function up()
 {
     Schema::table('peminjaman', function (Blueprint $table) {
-        $table->unsignedBigInteger('alat_id')->after('id')->nullable();
-
-        $table->foreign('alat_id')
-            ->references('id')
-            ->on('alat')
-            ->onDelete('cascade');
+        $table->dateTime('tanggal_dikembalikan')->nullable();
+        $table->integer('denda')->default(0);
     });
 }
-
     /**
      * Reverse the migrations.
      */

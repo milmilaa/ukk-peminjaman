@@ -21,7 +21,7 @@ return new class extends Migration
 
             // ================= ALAT =================
             $table->foreignId('alat_id')
-                ->constrained('alats')
+                ->constrained('alat')
                 ->onDelete('cascade');
 
             // ================= JUMLAH (INI YANG KAMU LUPA) =================

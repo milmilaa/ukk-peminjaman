@@ -16,5 +16,16 @@ class Pengembalian extends Model
         'tanggal_kembali',
         'kondisi',
         'keterangan',
+        'denda',
+        'status_denda',
+        'metode_bayar',
+        'tanggal_bayar',
+        // ===============================================================
     ];
+
+
+    public function peminjaman()
+    {
+        return $this->belongsTo(Peminjaman::class);
+    }
 }
