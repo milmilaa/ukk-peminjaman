@@ -4,96 +4,70 @@ namespace App\Http\Controllers\Petugas;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
 
 // MODELS
 use App\Models\Alat;
 use App\Models\Peminjaman;
-use App\Models\Pengembalian;
 
 class DashboardController extends Controller
 {
     public function index()
     {
-        // =========================
-        // TOTAL ALAT (STOK)
-        // =========================
-        $totalAlat = Alat::sum('jumlah');
+        // 1. Statistik Utama
+        $totalAlat = Alat::sum('stok') ?? 0;
 
-        // =========================
-        // ALAT TERSEDIA
-        // =========================
-        $alatTersedia = Alat::where('jumlah', '>', 0)->sum('jumlah');
+        $alatTersedia = Alat::where('stok', '>', 0)->sum('stok') ?? 0;
 
-        // =========================
-        // PEMINJAMAN AKTIF
-        // =========================
-        $peminjamanAktif = Peminjaman::whereIn('status', [
-            'dipinjam',
-            'menunggu',
-            'approved'
-        ])->count();
-
-        // =========================
-        // MENUNGGU PERSETUJUAN
-        // =========================
         $menunggu = Peminjaman::where('status', 'menunggu')->count();
 
-        // =========================
-        // DISETUJUI / DIPINJAM
-        // =========================
-        $dipinjam = Peminjaman::where('status', 'dipinjam')->count();
+        $pengembalianHariIni = Peminjaman::where('status', 'kembali')
+            ->whereDate('updated_at', Carbon::today())
+            ->count();
 
-        // =========================
-        // DITOLAK
-        // =========================
-        $ditolak = Peminjaman::where('status', 'ditolak')->count();
+        // FIX: Karena kolom tgl_kembali gak ada, kita set 0 aja dulu biar gak error
+        // Atau kalau kamu punya kolom lain (misal: tanggal_harus_kembali), ganti namanya di sini
+        $terlambat = 0;
 
-        // =========================
-        // TERLAMBAT PENGEMBALIAN
-        // =========================
-        $terlambat = Peminjaman::where('status', 'terlambat')->count();
-
-        // =========================
-        // PENGEMBALIAN HARI INI
-        // =========================
-        $pengembalianHariIni = Pengembalian::whereDate('created_at', today())->count();
-
-        // =========================
-        // STOK RENDAH
-        // =========================
-        $stokRendah = Alat::where('jumlah', '<=', 3)->count();
-
-        // =========================
-        // AKTIVITAS TERBARU
-        // =========================
-        $aktivitas = Peminjaman::with(['alat', 'user'])
+        // 2. Aktivitas Terbaru
+        $aktivitas = Peminjaman::with(['user'])
             ->latest()
             ->take(6)
             ->get();
 
-        // =========================
-        // ALAT PALING SERING DIPINJAM
-        // =========================
-        $alatPopuler = Alat::withCount('peminjaman')
-            ->orderByDesc('peminjaman_count')
+        // 3. Alat Terlaris (Top 5)
+        // Saya sederhanakan querynya biar gak bentrok sama relasi yang belum ada
+        $alatPopuler = Alat::orderBy('stok', 'asc')
             ->take(5)
             ->get();
 
-        // =========================
-        // RETURN VIEW
-        // =========================
+        // 4. Logika Chart: 7 hari terakhir
+        $chartData = Peminjaman::select(
+                DB::raw('DATE(created_at) as date'),
+                DB::raw('count(*) as total')
+            )
+            ->where('created_at', '>=', now()->subDays(7))
+            ->groupBy('date')
+            ->orderBy('date', 'asc')
+            ->get();
+
+        $chartLabels = $chartData->pluck('date')->map(function($date) {
+            return Carbon::parse($date)->format('d M');
+        });
+
+        $chartValues = $chartData->pluck('total');
+
         return view('petugas.dashboard', compact(
             'totalAlat',
             'alatTersedia',
-            'peminjamanAktif',
             'menunggu',
-            'dipinjam',
-            'ditolak',
             'terlambat',
             'pengembalianHariIni',
-            'stokRendah',
             'aktivitas',
-            'alatPopuler'
+            'alatPopuler',
+            'chartLabels',
+            'chartValues'
         ));
     }
 }

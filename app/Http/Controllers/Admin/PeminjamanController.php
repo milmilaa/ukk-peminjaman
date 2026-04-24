@@ -19,6 +19,7 @@ class PeminjamanController extends Controller
             ->latest()
             ->get();
 
+        // Jika error, coba ganti menjadi 'peminjam.index' atau 'admin.peminjaman.index'
         return view('peminjaman.index', compact('peminjamans'));
     }
 
@@ -37,29 +38,27 @@ class PeminjamanController extends Controller
         $request->validate([
             'user_id' => 'required',
             'alat_id' => 'required',
-            'jumlah' => 'required|integer|min:1',
+            'stok' => 'required|integer|min:1',
             'tanggal_pinjam' => 'required|date',
             'tanggal_kembali' => 'required|date|after_or_equal:tanggal_pinjam',
         ]);
 
         $alat = Alat::findOrFail($request->alat_id);
 
-        if ($request->jumlah > $alat->jumlah) {
-            return back()->withErrors([
-                'jumlah' => 'Jumlah melebihi stok alat'
-            ]);
+        if ($request->stok > $alat->stok) {
+            return back()->withErrors(['stok' => 'Stok tidak mencukupi!'])->withInput();
         }
 
         Peminjaman::create([
             'user_id' => $request->user_id,
             'alat_id' => $request->alat_id,
-            'jumlah' => $request->jumlah,
+            'stok' => $request->stok,
             'tanggal_pinjam' => $request->tanggal_pinjam,
             'tanggal_kembali' => $request->tanggal_kembali,
             'status' => 'dipinjam'
         ]);
 
-        $alat->decrement('jumlah', $request->jumlah);
+        $alat->decrement('stok', $request->stok);
 
         return redirect()->route('admin.peminjaman.index')
             ->with('success', 'Peminjaman berhasil ditambahkan');
@@ -70,54 +69,56 @@ class PeminjamanController extends Controller
     {
         $peminjaman = Peminjaman::findOrFail($id);
 
+        /**
+         * PERHATIKAN BARIS INI:
+         * Jika folder kamu di resources/views/peminjaman/edit.blade.php -> gunakan 'peminjaman.edit'
+         * Jika folder kamu di resources/views/peminjam/edit.blade.php -> gunakan 'peminjam.edit'
+         */
         return view('peminjaman.edit', compact('peminjaman'));
     }
 
     /* ================= UPDATE ================= */
     public function update(Request $request, $id)
     {
-        $peminjaman = Peminjaman::findOrFail($id);
+        $peminjaman = Peminjaman::with('alat')->findOrFail($id);
 
         $request->validate([
-            'status' => 'required'
+            'status' => 'required|in:dipinjam,dikembalikan',
+            'tanggal_kembali' => 'required|date'
         ]);
 
-        // kalau dikembalikan, stok balik
-        if (
-            $request->status === 'dikembalikan' &&
-            $peminjaman->status !== 'dikembalikan'
-        ) {
-            $peminjaman->alat->increment('jumlah', $peminjaman->jumlah);
+        // Logika Stok
+        if ($request->status === 'dikembalikan' && $peminjaman->status !== 'dikembalikan') {
+            $peminjaman->alat->increment('stok', $peminjaman->stok);
+        } elseif ($request->status === 'dipinjam' && $peminjaman->status === 'dikembalikan') {
+            $peminjaman->alat->decrement('stok', $peminjaman->stok);
         }
 
         $peminjaman->update([
-            'status' => $request->status
+            'status' => $request->status,
+            'tanggal_kembali' => $request->tanggal_kembali
         ]);
 
         return redirect()->route('admin.peminjaman.index')
-            ->with('success', 'Status peminjaman diperbarui');
+            ->with('success', 'Status diperbarui');
     }
 
     /* ================= DELETE ================= */
     public function destroy($id)
     {
-        $peminjaman = Peminjaman::findOrFail($id);
+        $peminjaman = Peminjaman::with('alat')->findOrFail($id);
 
         if ($peminjaman->status !== 'dikembalikan') {
-            $peminjaman->alat->increment('jumlah', $peminjaman->jumlah);
+            $peminjaman->alat->increment('stok', $peminjaman->stok);
         }
 
         $peminjaman->delete();
-
-        return back()->with('success', 'Data peminjaman dihapus');
+        return back()->with('success', 'Data dihapus');
     }
 
-    /* ================= EXPORT EXCEL (FIX ERROR KAMU) ================= */
+    /* ================= EXPORT ================= */
     public function exportExcel()
     {
-        return Excel::download(
-            new PeminjamanExport,
-            'peminjaman.xlsx'
-        );
+        return Excel::download(new PeminjamanExport, 'peminjaman.xlsx');
     }
 }

@@ -17,7 +17,7 @@ class DashboardController extends Controller
         // ========================
         // TOTAL STOK ALAT
         // ========================
-        $totalAlat = Alat::sum('jumlah');
+        $totalAlat = Alat::sum('stok');
 
         // ========================
         // PEMINJAMAN AKTIF
@@ -48,7 +48,7 @@ class DashboardController extends Controller
         // ========================
         // STOK RENDAH
         // ========================
-        $stokRendah = Alat::where('jumlah', '<=', 3)->count();
+        $stokRendah = Alat::where('stok', '<=', 3)->count();
 
         // ========================
         // TERLAMBAT
@@ -58,7 +58,7 @@ class DashboardController extends Controller
         // ========================
         // AKTIVITAS TERBARU
         // ========================
-        $aktivitas = Peminjaman::with(['alat', 'user'])
+        $aktivitas = Peminjaman::with(['detail.alat', 'user']) // Tambahin detail.alat
             ->latest()
             ->take(5)
             ->get();

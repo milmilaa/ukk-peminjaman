@@ -51,23 +51,18 @@
 /* BUTTON */
 .btn {
     display: inline-block;
-    padding: 10px 14px;
+    padding: 8px 12px;
     border-radius: 8px;
     text-decoration: none;
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 600;
+    color: #fff;
 }
 
-.btn-success {
-    background: #16a34a;
-    color: white;
-}
+.btn-blue { background: #3b82f6; }
+.btn-green { background: #16a34a; }
+.btn-orange { background: #f97316; }
 
-.btn-success:hover {
-    background: #15803d;
-}
-
-/* BADGE */
 .badge {
     padding: 4px 8px;
     border-radius: 6px;
@@ -94,12 +89,12 @@
 
 <div class="card-box">
 
-    <a href="{{ route('petugas.peminjaman.export.excel') }}" class="btn btn-success">
+    <!-- BUTTON -->
+    <a href="{{ route('petugas.peminjaman.export.excel') }}" class="btn btn-green">
         📊 Export Excel
     </a>
 
-    <!-- 🔥 TAMBAHAN: PRINT INVOICE DENDA -->
-    <a href="{{ route('petugas.laporan.denda') }}" class="btn btn-success" style="background:#3b82f6;">
+    <a href="{{ route('petugas.laporan.denda') }}" class="btn btn-blue">
         💰 Laporan Denda
     </a>
 
@@ -109,10 +104,10 @@
                 <th>No</th>
                 <th>Nama Peminjam</th>
                 <th>Alat</th>
-                <th>Jumlah</th>
+                <th>Qty</th>
                 <th>Status</th>
-                <th>Tanggal Peminjaman</th>
-                <th>Tanggal Pengembalian</th>
+                <th>Tanggal Pinjam</th>
+                <th>Tanggal Kembali</th>
                 <th>Denda</th>
                 <th>Invoice</th>
             </tr>
@@ -122,7 +117,7 @@
             @forelse($peminjaman as $key => $item)
 
             @php
-                $pengembalian = $item->pengembalian;
+                $pengembalian = $item->pengembalian ?? null;
             @endphp
 
             <tr>
@@ -131,31 +126,37 @@
                 <td>{{ $item->user->name ?? '-' }}</td>
 
                 <td>
-                    @if ($item->detail->count())
-                        @foreach ($item->detail as $detail)
-                            {{ $detail->alat->nama_alat }} ({{ $detail->qty }}) <br>
-                        @endforeach
-                    @else
+                    @forelse($item->detail as $detail)
+                        {{ $detail->alat->nama_alat ?? '-' }} <br>
+                    @empty
                         -
-                    @endif
+                    @endforelse
                 </td>
 
-                <td>{{ $item->jumlah ?? 1 }}</td>
+                <td>
+                    @forelse($item->detail as $detail)
+                        {{ $detail->qty }} <br>
+                    @empty
+                        -
+                    @endforelse
+                </td>
 
-                <td>{{ ucfirst($item->status) }}</td>
+                <td>{{ ucfirst($item->status ?? '-') }}</td>
 
                 <td>
                     {{ $item->created_at ? $item->created_at->format('d-m-Y') : '-' }}
                 </td>
 
                 <td>
-                    {{ $item->tanggal_kembali ? \Carbon\Carbon::parse($item->tanggal_kembali)->format('d-m-Y') : '-' }}
+                    {{ $item->tanggal_kembali
+                        ? \Carbon\Carbon::parse($item->tanggal_kembali)->format('d-m-Y')
+                        : '-' }}
                 </td>
 
-                <!-- 💰 DENDA -->
+                <!-- DENDA -->
                 <td>
                     @if($pengembalian)
-                        Rp {{ number_format($pengembalian->denda,0,',','.') }} <br>
+                        Rp {{ number_format($pengembalian->denda ?? 0,0,',','.') }} <br>
 
                         @if($pengembalian->status_denda == 'lunas')
                             <span class="badge badge-success">Lunas</span>
@@ -167,12 +168,11 @@
                     @endif
                 </td>
 
-                <!-- 🧾 INVOICE -->
+                <!-- INVOICE -->
                 <td>
                     @if($pengembalian)
-                        <a href="{{ route('petugas.laporan.denda.pdf', $item->id ?? 0) }}"
-                           class="btn btn-success"
-                           style="background:#f97316;">
+                        <a href="{{ route('petugas.laporan.denda.pdf', $item->id) }}"
+                           class="btn btn-orange">
                             🧾 Invoice
                         </a>
                     @else
@@ -192,10 +192,14 @@
         </tbody>
     </table>
 
-    <!-- 🔥 TOTAL KESELURUHAN -->
+    <!-- TOTAL DENDA -->
     <div class="total-box">
-        💰 Total Semua Denda: Rp {{
-            number_format($peminjaman->sum(fn($p) => $p->pengembalian->denda ?? 0), 0, ',', '.')
+        💰 Total Semua Denda:
+        Rp {{
+            number_format(
+                $peminjaman->sum(fn($p) => $p->pengembalian->denda ?? 0),
+                0, ',', '.'
+            )
         }}
     </div>
 

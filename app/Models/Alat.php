@@ -9,14 +9,14 @@ class Alat extends Model
 {
     use HasFactory;
 
-    // ✅ sesuaikan dengan nama tabel di database
     protected $table = 'alat';
 
     protected $fillable = [
         'nama_alat',
         'kategori_id',
-        'jumlah',
-        'gambar'
+        'stok',
+        'gambar',
+        'harga',
     ];
 
     // relasi ke kategori
@@ -27,12 +27,12 @@ class Alat extends Model
 
     // relasi ke peminjaman
     public function peminjaman()
-{
-    return $this->hasMany(Peminjaman::class, 'alat_id');
-}
+    {
+        return $this->hasMany(Peminjaman::class, 'alat_id');
+    }
 
     public function detailPeminjaman()
-{
-    return $this->hasMany(DetailPeminjaman::class, 'alat_id');
-}
+    {
+        return $this->hasMany(DetailPeminjaman::class, 'alat_id');
+    }
 }

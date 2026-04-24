@@ -24,8 +24,7 @@ return new class extends Migration
                 ->constrained('alat')
                 ->onDelete('cascade');
 
-            // ================= JUMLAH (INI YANG KAMU LUPA) =================
-            $table->integer('jumlah')->default(1);
+            $table->integer('stok')->default(1);
 
             // ================= TANGGAL =================
             $table->date('tanggal_pinjam');

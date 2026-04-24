@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Tambah Peminjaman - ALMEDIS')
+@section('title', 'Edit Peminjaman - ALMEDIS')
 
 @section('content')
 
@@ -30,6 +30,9 @@
         color: #0f172a;
         margin: 0;
         letter-spacing: -1px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
     }
 
     .page-header p {
@@ -77,6 +80,14 @@
         box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
     }
 
+    /* Readonly style */
+    .form-control:disabled {
+        background-color: #f1f5f9;
+        color: #64748b;
+        cursor: not-allowed;
+        border: 2px solid #e2e8f0;
+    }
+
     /* ================= PREVIEW BOX ================= */
     .preview-box {
         width: 120px;
@@ -97,7 +108,7 @@
         object-fit: cover;
     }
 
-    /* ================= LAYOUT ================= */
+    /* ================= GRID LAYOUT ================= */
     .row-grid {
         display: grid;
         grid-template-columns: 1fr 1fr;
@@ -155,59 +166,56 @@
 
 <div class="dashboard-container">
     <div class="page-header">
-        <h1>Tambah Peminjaman</h1>
-        <p>Gunakan form ini untuk mendata peminjaman alat medis baru</p>
+        <h1>Edit Peminjaman</h1>
+        <p>Perbarui status atau tanggal pengembalian peminjaman alat medis</p>
     </div>
 
     <div class="form-card">
-        <form action="{{ route('admin.peminjaman.store') }}" method="POST">
+        <form action="{{ route('admin.peminjaman.update', $peminjaman->id) }}" method="POST">
             @csrf
+            @method('PUT')
 
-            <div style="margin-bottom: 25px;">
-                <label class="form-label">Nama Peminjam</label>
-                <select name="user_id" class="form-control" required>
-                    <option value="">-- Pilih Peminjam --</option>
-                    @foreach($users as $user)
-                        <option value="{{ $user->id }}">{{ $user->name }}</option>
-                    @endforeach
-                </select>
+            <div class="row-grid">
+                <div class="form-group">
+                    <label class="form-label">Nama Peminjam</label>
+                    <input type="text" class="form-control" value="{{ $peminjaman->user->name ?? 'User Tidak Ditemukan' }}" disabled>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Alat Medis</label>
+                    <input type="text" class="form-control" value="{{ $peminjaman->alat->nama_alat ?? 'Alat Tidak Ditemukan' }}" disabled>
+                </div>
             </div>
 
-            <div style="margin-bottom: 25px;">
-                <label class="form-label">Pilih Alat Medis</label>
-                <select name="alat_id" class="form-control" id="alatSelect" required>
-                    <option value="">-- Pilih Alat --</option>
-                    @foreach($alats as $alat)
-                        <option value="{{ $alat->id }}" data-image="{{ asset('storage/'.$alat->gambar) }}">
-                            {{ $alat->nama_alat }}
-                        </option>
-                    @endforeach
-                </select>
-
-                <div class="preview-box" id="previewBox">
-                    <span style="color: #94a3b8; font-size: 12px; font-weight: 600;">Preview Alat</span>
+            <div class="form-group" style="margin-bottom: 25px;">
+                <label class="form-label">Preview Alat</label>
+                <div class="preview-box">
+                    @if($peminjaman->alat && $peminjaman->alat->gambar)
+                        <img src="{{ asset('storage/' . $peminjaman->alat->gambar) }}" alt="Preview">
+                    @else
+                        <span style="color: #94a3b8; font-size: 12px; font-weight: 600;">Preview Alat</span>
+                    @endif
                 </div>
             </div>
 
             <div class="row-grid">
-                <div>
-                    <label class="form-label">Jumlah (Stok)</label>
-                    <input type="number" name="stok" class="form-control" min="1" placeholder="Masukkan jumlah" required>
+                <div class="form-group">
+                    <label class="form-label">Status Peminjaman</label>
+                    <select name="status" class="form-control" required>
+                        <option value="dipinjam" {{ $peminjaman->status == 'dipinjam' ? 'selected' : '' }}>Dipinjam</option>
+                        <option value="dikembalikan" {{ $peminjaman->status == 'dikembalikan' ? 'selected' : '' }}>Dikembalikan</option>
+                    </select>
                 </div>
-                <div>
-                    <label class="form-label">Tanggal Pinjam</label>
-                    <input type="date" name="tanggal_pinjam" class="form-control" required>
-                </div>
-            </div>
 
-            <div style="margin-bottom: 25px;">
-                <label class="form-label">Tanggal Kembali</label>
-                <input type="date" name="tanggal_kembali" class="form-control" required>
+                <div class="form-group">
+                    <label class="form-label">Tanggal Kembali</label>
+                    <input type="date" name="tanggal_kembali" class="form-control" value="{{ $peminjaman->tanggal_kembali }}" required>
+                </div>
             </div>
 
             <div class="btn-group">
                 <button type="submit" class="btn-submit">
-                    <i class="fa-solid fa-save"></i> Simpan Peminjaman
+                    <i class="fa-solid fa-save"></i> Simpan Perubahan
                 </button>
                 <a href="{{ route('admin.peminjaman.index') }}" class="btn-cancel">
                     <i class="fa-solid fa-arrow-left"></i> Kembali
@@ -216,21 +224,5 @@
         </form>
     </div>
 </div>
-
-<script>
-    document.getElementById('alatSelect').addEventListener('change', function () {
-        let selected = this.options[this.selectedIndex];
-        let image = selected.getAttribute('data-image');
-        let box = document.getElementById('previewBox');
-
-        if (image && !image.includes('null')) {
-            box.innerHTML = `<img src="${image}" />`;
-            box.style.borderStyle = 'solid';
-        } else {
-            box.innerHTML = `<span style="color: #94a3b8; font-size: 12px; font-weight: 600;">Preview Alat</span>`;
-            box.style.borderStyle = 'dashed';
-        }
-    });
-</script>
 
 @endsection

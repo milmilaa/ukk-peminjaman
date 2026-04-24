@@ -9,18 +9,20 @@ class Peminjaman extends Model
     protected $table = 'peminjaman';
 
     protected $fillable = [
- 'alat_id',
- 'user_id',
- 'jumlah',
- 'status',
- 'tanggal_pinjam',
- 'tanggal_kembali',
-];
+        'alat_id',
+        'user_id',
+        'stok',
+        'status',
+        'tanggal_pinjam',
+        'tanggal_kembali',
+    ];
+
+    // ================= RELASI =================
 
     public function alat()
-{
-    return $this->belongsTo(Alat::class, 'alat_id');
-}
+    {
+        return $this->belongsTo(Alat::class, 'alat_id');
+    }
 
     public function user()
     {
@@ -28,7 +30,12 @@ class Peminjaman extends Model
     }
 
     public function detail()
-{
-    return $this->hasMany(\App\Models\DetailPeminjaman::class);
-}
+    {
+        return $this->hasMany(\App\Models\DetailPeminjaman::class, 'peminjaman_id');
+    }
+
+    public function pengembalian()
+    {
+        return $this->hasOne(\App\Models\Pengembalian::class, 'peminjaman_id');
+    }
 }

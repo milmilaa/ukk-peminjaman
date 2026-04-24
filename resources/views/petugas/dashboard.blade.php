@@ -1,218 +1,163 @@
 @extends('layouts.app')
 @section('title', 'Dashboard Petugas')
+
 @section('content')
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
 <style>
-.page-title {
-    margin-bottom: 28px;
-}
-.page-title h1 {
-    font-size: 29px;
-    font-weight: 700;
-    color: #111827;
-}
-.page-title span {
-    font-size: 14.5px;
-    color: #6b7280;
-}
+    :root {
+        --bg-light: #f1f5f9;
+        --panel-white: #ffffff;
+        --border-color: #e2e8f0;
+        --text-main: #1e293b;
+        --text-muted: #64748b;
+        --primary-blue: #2563eb;
+        --accent-amber: #f59e0b;
+        --accent-red: #e11d48;
+    }
 
-/* ================= STATS - VERSI UPGRADE ================= */
-.stats-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(245px, 1fr));
-    gap: 20px;
-    margin-bottom: 30px;
-}
-.stat-box {
-    background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
-    border-radius: 20px;
-    padding: 24px 22px;
-    display: flex;
-    align-items: center;
-    gap: 18px;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.07);
-    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-    border: 1px solid #f1f5f9;
-}
-.stat-box:hover {
-    transform: translateY(-6px);
-    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.12);
-}
-.stat-icon {
-    width: 62px;
-    height: 62px;
-    border-radius: 16px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 26px;
-    flex-shrink: 0;
-}
-.stat-info {
-    flex: 1;
-}
-.stat-info h3 {
-    margin: 0;
-    font-size: 28px;
-    font-weight: 700;
-    color: #111827;
-    line-height: 1;
-}
-.stat-info span {
-    font-size: 13.5px;
-    color: #64748b;
-    font-weight: 500;
-}
-.trend {
-    font-size: 13px;
-    font-weight: 600;
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    margin-top: 6px;
-}
-.trend.up { color: #10b981; }
-.trend.down { color: #ef4444; }
+    body { background-color: var(--bg-light); color: var(--text-main); font-family: 'Inter', sans-serif; }
+    .dashboard-header { margin-bottom: 24px; }
+    .dashboard-header h1 { font-size: 24px; font-weight: 700; margin: 0; }
+    .dashboard-header p { color: var(--text-muted); font-size: 14px; margin-top: 4px; }
 
-/* Warna khusus tiap box */
-.stat-total .stat-icon    { background: #f0f9ff; color: #0ea5e9; }
-.stat-menunggu .stat-icon { background: #fefce8; color: #eab308; }
-.stat-kembali .stat-icon  { background: #ecfdf5; color: #10b981; }
-.stat-terlambat .stat-icon{ background: #fef2f2; color: #ef4444; }
+    .stats-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px; }
+    .stat-card { background: var(--panel-white); padding: 20px; border-radius: 8px; border: 1px solid var(--border-color); }
+    .stat-label { display: block; font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; margin-bottom: 8px; }
+    .stat-number { font-size: 28px; font-weight: 700; }
+
+    .main-grid { display: grid; grid-template-columns: 1fr 380px; gap: 20px; margin-bottom: 24px; }
+    @media (max-width: 1024px) { .main-grid { grid-template-columns: 1fr; } }
+
+    .content-panel { background: var(--panel-white); border-radius: 8px; border: 1px solid var(--border-color); padding: 20px; }
+    .content-panel h3 { font-size: 15px; font-weight: 700; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 1px solid #f8fafc; }
+
+    .table-custom { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .table-custom th { text-align: left; color: var(--text-muted); font-weight: 600; padding: 12px; border-bottom: 2px solid var(--bg-light); }
+    .table-custom td { padding: 12px; border-bottom: 1px solid var(--bg-light); }
+
+    .badge-status { padding: 4px 8px; border-radius: 4px; font-size: 10px; font-weight: 700; text-transform: uppercase; }
+    .bg-wait { background: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
+    .bg-active { background: #dcfce7; color: #15803d; border: 1px solid #a7f3d0; }
+    .bg-danger { background: #fee2e2; color: #b91c1c; border: 1px solid #fecdd3; }
 </style>
 
-<!-- TITLE -->
-<div class="page-title">
+<div class="dashboard-header">
     <h1>Dashboard Petugas</h1>
-    <span>Ringkasan sistem peminjaman alat laboratorium</span>
+    <p>Data inventaris dan aktivitas peminjaman hari ini.</p>
 </div>
 
-<!-- ================= STATISTIK UPGRADE ================= -->
-<div class="stats-grid">
-    <!-- Total Alat -->
-    <div class="stat-box stat-total">
-        <div class="stat-icon"><i class="fa fa-boxes-stacked"></i></div>
-        <div class="stat-info">
-            <h3>{{ $totalAlat }}</h3>
-            <span>Total Alat Tersedia</span>
-            <div class="trend up">
-                <i class="fa fa-arrow-trend-up"></i> +8% minggu ini
-            </div>
-        </div>
+<div class="stats-container">
+    <div class="stat-card">
+        <span class="stat-label">Total Unit Alat</span>
+        <span class="stat-number">{{ number_format($totalAlat) }}</span>
     </div>
-
-    <!-- Menunggu Approval -->
-    <div class="stat-box stat-menunggu">
-        <div class="stat-icon"><i class="fa fa-clock"></i></div>
-        <div class="stat-info">
-            <h3>{{ $menunggu }}</h3>
-            <span>Menunggu Approval</span>
-            <div class="trend up">
-                <i class="fa fa-arrow-trend-up"></i> {{ $menunggu > 0 ? 'Perlu ditangani' : 'Semua clear' }}
-            </div>
-        </div>
+    <div class="stat-card">
+        <span class="stat-label" style="color: var(--accent-amber);">Menunggu Konfirmasi</span>
+        <span class="stat-number">{{ $menunggu }}</span>
     </div>
-
-    <!-- Dikembalikan Hari Ini -->
-    <div class="stat-box stat-kembali">
-        <div class="stat-icon"><i class="fa fa-rotate-left"></i></div>
-        <div class="stat-info">
-            <h3>{{ $pengembalianHariIni }}</h3>
-            <span>Dikembalikan Hari Ini</span>
-            <div class="trend {{ $pengembalianHariIni > 5 ? 'up' : 'down' }}">
-                <i class="fa fa-arrow-trend-{{ $pengembalianHariIni > 5 ? 'up' : 'down' }}"></i>
-                {{ $pengembalianHariIni }} transaksi
-            </div>
-        </div>
+    <div class="stat-card">
+        <span class="stat-label">Kembali Hari Ini</span>
+        <span class="stat-number">{{ $pengembalianHariIni }}</span>
     </div>
-
-    <!-- Terlambat -->
-    <div class="stat-box stat-terlambat">
-        <div class="stat-icon"><i class="fa fa-triangle-exclamation"></i></div>
-        <div class="stat-info">
-            <h3>{{ $terlambat }}</h3>
-            <span>Peminjaman Terlambat</span>
-            <div class="trend {{ $terlambat > 0 ? 'down' : '' }}">
-                <i class="fa fa-arrow-trend-{{ $terlambat > 0 ? 'down' : 'up' }}"></i>
-                {{ $terlambat > 0 ? 'Segera ditindak' : 'Tidak ada keterlambatan' }}
-            </div>
-        </div>
+    <div class="stat-card">
+        <span class="stat-label" style="color: var(--accent-red);">Terlambat</span>
+        <span class="stat-number">{{ $terlambat }}</span>
     </div>
 </div>
 
-<!-- ================= GRID (sama seperti sebelumnya) ================= -->
-<div class="dashboard-grid">
-    <!-- AKTIVITAS TERBARU -->
-    <div class="card-box">
-        <h3><i class="fa fa-clock-rotate-left"></i> Aktivitas Terbaru</h3>
-        <ul class="list">
-            @forelse($aktivitas as $item)
-                <li>
-                    <span>
-                        {{ $item->alat->nama_alat ?? '-' }}
-                        <small style="color:#6b7280;">— {{ $item->user->name ?? '-' }}</small>
-                    </span>
-                    <span class="badge
-                        {{ $item->status == 'menunggu' ? 'wait' : '' }}
-                        {{ in_array($item->status, ['dipinjam','approved']) ? 'done' : '' }}
-                        {{ in_array($item->status, ['ditolak','rejected']) ? 'reject' : '' }}">
-                        {{ ucfirst($item->status) }}
-                    </span>
-                </li>
-            @empty
-                <li>Tidak ada aktivitas saat ini</li>
-            @endforelse
-        </ul>
+<div class="main-grid">
+    <div class="content-panel">
+        <h3>Statistik Peminjaman</h3>
+        <div style="height: 300px;">
+            <canvas id="loanChart"></canvas>
+        </div>
     </div>
 
-    <!-- NOTIFIKASI -->
-    <div class="card-box">
-        <h3><i class="fa fa-bell"></i> Notifikasi Penting</h3>
-        <ul class="list">
-            <li>
-                <span>Permintaan menunggu approval</span>
-                <span class="badge wait">{{ $menunggu }} permintaan</span>
-            </li>
-            <li>
-                <span>Peminjaman ditolak</span>
-                <span class="badge reject">{{ $ditolak }} kasus</span>
-            </li>
-            <li>
-                <span>Alat dengan stok rendah</span>
-                <span class="badge info">{{ $stokRendah }} alat</span>
-            </li>
-            <li>
-                <span>Peminjaman terlambat</span>
-                <span class="badge reject">{{ $terlambat }} alat</span>
-            </li>
-        </ul>
+    <div class="content-panel">
+        <h3>Alat Terlaris</h3>
+        <table class="table-custom">
+            <thead>
+                <tr>
+                    <th>Nama Alat</th>
+                    <th style="text-align: right;">Dipinjam</th>
+                </tr>
+            </thead>
+            <tbody>
+                @forelse($alatPopuler as $alat)
+                <tr>
+                    <td>{{ $alat->nama_alat }}</td>
+                    <td style="text-align: right; font-weight: 700; color: var(--primary-blue);">
+                        {{ $alat->peminjaman_count }}x
+                    </td>
+                </tr>
+                @empty
+                <tr><td colspan="2" style="text-align:center; padding:20px; color:var(--text-muted);">Belum ada data</td></tr>
+                @endforelse
+            </tbody>
+        </table>
     </div>
 </div>
 
-<!-- ================= ALAT POPULER + AKSI ================= -->
-<div class="dashboard-grid">
-    <div class="card-box">
-        <h3><i class="fa fa-fire"></i> Alat Paling Sering Dipinjam</h3>
-        <ul class="list">
-            @forelse($alatPopuler as $alat)
-                <li>
-                    {{ $alat->nama_alat }}
-                    <span class="badge done">{{ $alat->peminjaman_count }}x</span>
-                </li>
-            @empty
-                <li>Tidak ada data</li>
-            @endforelse
-        </ul>
-    </div>
-
-    <div class="card-box">
-        <h3><i class="fa fa-bolt"></i> Aksi Cepat Petugas</h3>
-        <button class="btn btn-warning btn-quick">
-            <i class="fa fa-file"></i> Generate Laporan
-        </button>
-        <button class="btn btn-danger btn-quick">
-            <i class="fa fa-exclamation-triangle"></i> Cek Semua Terlambat
-        </button>
+<div class="content-panel">
+    <h3>Data Peminjaman Terbaru</h3>
+    <div style="overflow-x: auto;">
+        <table class="table-custom">
+            <thead>
+                <tr>
+                    <th>Peminjam</th>
+                    <th>Alat</th>
+                    <th>Tanggal Pinjam</th>
+                    <th style="text-align: right;">Aksi</th>
+                </tr>
+            </thead>
+            <tbody>
+                @forelse($aktivitas as $item)
+                <tr>
+                    <td><strong>{{ $item->user->name ?? '-' }}</strong></td>
+                    <td>{{ $item->alat->nama_alat ?? '-' }}</td>
+                    <td style="color: var(--text-muted);">{{ $item->created_at->format('d/m/Y H:i') }}</td>
+                    <td style="text-align: right;">
+                        <span class="badge-status
+                            {{ $item->status == 'menunggu' ? 'bg-wait' : '' }}
+                            {{ in_array($item->status, ['dipinjam', 'approved', 'kembali']) ? 'bg-active' : '' }}
+                            {{ in_array($item->status, ['ditolak', 'terlambat']) ? 'bg-danger' : '' }}">
+                            {{ $item->status }}
+                        </span>
+                    </td>
+                </tr>
+                @empty
+                <tr><td colspan="4" style="text-align:center; padding:30px; color:var(--text-muted);">Tidak ada aktivitas terbaru</td></tr>
+                @endforelse
+            </tbody>
+        </table>
     </div>
 </div>
 
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const ctx = document.getElementById('loanChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: {!! json_encode($chartLabels) !!},
+                datasets: [{
+                    label: 'Jumlah Pinjaman',
+                    data: {!! json_encode($chartValues) !!},
+                    backgroundColor: '#2563eb',
+                    borderRadius: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { beginAtZero: true, grid: { color: '#f1f5f9' } },
+                    x: { grid: { display: false } }
+                }
+            }
+        });
+    });
+</script>
 @endsection

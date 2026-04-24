@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title','Keranjang')
+@section('title','Keranjang Peminjaman')
 
 @section('content')
 
@@ -8,128 +8,244 @@
     $cart = $cart ?? [];
 @endphp
 
-{{-- ✅ ALERT SUKSES --}}
-@if(session('success'))
-<div style="background:#dcfce7;color:#166534;padding:12px 16px;border-radius:10px;margin-bottom:15px;">
-    {{ session('success') }}
-</div>
-@endif
-
 <style>
-.page-title { margin-bottom: 20px; }
-.page-title h1 { font-size: 26px; font-weight: 600; }
-.page-title span { font-size: 14px; color: #6b7280; }
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
 
-.cart-container {
-    display: grid;
-    grid-template-columns: 2fr 1fr;
-    gap: 20px;
+:root {
+    --bg: #f4f6fb;
+    --card: #ffffff;
+    --primary: #3b4bff;
+    --primary-2: #5f6fff;
+    --text: #111827;
+    --muted: #6b7280;
+    --border: #e5e7eb;
+    --font: 'Plus Jakarta Sans', sans-serif;
 }
 
-/* LIST */
+body {
+    background-color: var(--bg);
+    font-family: var(--font);
+}
+
+/* ── ALERT ── */
+.alert-success {
+    background: #ecfdf5;
+    color: #047857;
+    padding: 14px 20px;
+    border-radius: 12px;
+    margin-bottom: 25px;
+    border: 1.5px solid #bbf7d0;
+    font-weight: 600;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* ── TITLE ── */
+.page-title { margin-bottom: 30px; }
+.page-title h1 {
+    font-size: 28px;
+    font-weight: 800;
+    color: var(--text);
+    letter-spacing: -0.5px;
+}
+.page-title span { font-size: 14px; color: var(--muted); }
+
+/* ── LAYOUT ── */
+.cart-container {
+    display: grid;
+    grid-template-columns: 1.5fr 1fr; /* Perbandingan diubah agar form lebih lebar */
+    gap: 30px;
+    align-items: start;
+}
+
+/* ── LIST ALAT ── */
 .cart-list {
-    background: white;
-    border-radius: 16px;
-    padding: 20px;
-    box-shadow: 0 8px 20px rgba(0,0,0,0.05);
+    background: var(--card);
+    border-radius: 24px;
+    padding: 24px;
+    border: 1.5px solid var(--border);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.02);
 }
 
 .cart-item {
     display: flex;
-    gap: 15px;
-    margin-bottom: 15px;
-    padding-bottom: 15px;
-    border-bottom: 1px solid #eee;
+    gap: 20px;
+    margin-bottom: 20px;
+    padding-bottom: 20px;
+    border-bottom: 1.5px solid #f3f4f6;
     align-items: center;
 }
 
+.cart-item:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+
+.check-item {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+    accent-color: var(--primary);
+}
+
 .cart-item img {
-    width: 90px;
-    height: 90px;
+    width: 100px;
+    height: 100px;
     object-fit: cover;
-    border-radius: 10px;
+    border-radius: 14px;
+    border: 1px solid var(--border);
 }
 
 .cart-info { flex: 1; }
+.cart-info h4 {
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 8px;
+}
 
 .qty-control {
     display: flex;
     align-items: center;
-    gap: 8px;
-    margin-top: 8px;
+    gap: 12px;
 }
 
 .qty-btn {
-    width: 28px;
-    height: 28px;
-    border: none;
-    background: #eef1ff;
-    border-radius: 6px;
-    cursor: pointer;
-}
-
-.btn-remove {
-    background: #ef4444;
-    color: white;
-    border: none;
-    padding: 7px 10px;
+    width: 32px;
+    height: 32px;
+    border: 1.5px solid var(--border);
+    background: white;
     border-radius: 8px;
     cursor: pointer;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: 0.2s;
 }
+.qty-btn:hover { border-color: var(--primary); color: var(--primary); }
 
-/* SUMMARY + FORM */
+.btn-remove {
+    background: #fee2e2;
+    color: #dc2626;
+    border: none;
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: 0.2s;
+    font-size: 16px;
+}
+.btn-remove:hover { background: #fca5a5; color: white; }
+
+/* ── SUMMARY + FORM (DI-GEDEIN) ── */
 .summary {
-    background: white;
-    border-radius: 16px;
-    padding: 20px;
-    box-shadow: 0 8px 20px rgba(0,0,0,0.05);
+    background: var(--card);
+    border-radius: 24px;
+    padding: 35px; /* Padding lebih besar */
+    border: 1.5px solid var(--border);
+    box-shadow: 0 15px 35px rgba(59, 75, 255, 0.05);
+    position: sticky;
+    top: 20px;
 }
 
 .summary h3 {
-    margin-bottom: 15px;
+    font-size: 22px; /* Judul lebih besar */
+    font-weight: 800;
+    margin-bottom: 25px;
+    color: var(--primary);
+    display: flex;
+    align-items: center;
+    gap: 12px;
 }
 
 .form-group {
-    margin-bottom: 12px;
+    margin-bottom: 22px;
 }
 
 .form-group label {
-    font-size: 13px;
-    font-weight: 500;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text);
     display: block;
-    margin-bottom: 4px;
+    margin-bottom: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
 }
 
 .form-group input,
 .form-group textarea {
     width: 100%;
-    padding: 10px;
-    border-radius: 8px;
-    border: 1px solid #e5e7eb;
-    font-size: 13px;
+    padding: 15px 18px; /* Input lebih tebal/lega */
+    border-radius: 14px;
+    border: 1.5px solid var(--border);
+    font-size: 15px; /* Teks input lebih besar */
+    background-color: #fcfdfe;
+    font-family: inherit;
+    transition: all 0.3s ease;
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: var(--primary);
+    background-color: #fff;
+    box-shadow: 0 0 0 5px rgba(59, 75, 255, 0.1);
+}
+
+.summary-details {
+    background: #f0f3ff; /* Warna bg ringkasan lebih kontras */
+    padding: 20px;
+    border-radius: 18px;
+    margin: 25px 0;
+    border: 1px dashed #c7d2fe;
+}
+
+.summary-details p {
+    display: flex;
+    justify-content: space-between;
+    font-size: 15px;
+    margin-bottom: 10px;
+    color: var(--muted);
+}
+
+.summary-details p b {
+    color: var(--primary);
+    font-size: 18px;
 }
 
 .btn-checkout {
     width: 100%;
-    margin-top: 15px;
-    background: linear-gradient(135deg,#3b4bff,#5f6fff);
+    background: linear-gradient(135deg, var(--primary), var(--primary-2));
     color: white;
-    padding: 12px;
-    border-radius: 10px;
+    padding: 18px; /* Tombol lebih tinggi */
+    border-radius: 16px;
     border: none;
+    font-weight: 700;
+    font-size: 17px;
     cursor: pointer;
+    transition: 0.3s;
+    box-shadow: 0 8px 15px rgba(59, 75, 255, 0.25);
 }
 
-.empty {
-    text-align: center;
-    color: #6b7280;
-    padding: 20px;
+.btn-checkout:hover {
+    transform: translateY(-2px);
+    filter: brightness(1.1);
+    box-shadow: 0 12px 20px rgba(59, 75, 255, 0.35);
 }
+
+.empty { text-align: center; color: var(--muted); padding: 40px 0; }
 </style>
+
+{{-- ✅ ALERT SUKSES --}}
+@if(session('success'))
+<div class="alert-success" id="alertBox">
+    <span>✔ {{ session('success') }}</span>
+</div>
+@endif
 
 <div class="page-title">
     <h1>Keranjang Saya</h1>
-    <span>Pilih alat & isi form peminjaman</span>
+    <span>Kelola daftar alat dan lengkapi data peminjaman</span>
 </div>
 
 <form action="{{ route('medis.peminjaman.store') }}" method="POST">
@@ -137,11 +253,9 @@
 
 <div class="cart-container">
 
-    {{-- ================= LIST ================= --}}
+    {{-- ================= LIST ALAT ================= --}}
     <div class="cart-list">
-
         @forelse($cart as $item)
-
         @php
             $image = (!empty($item['gambar']) && file_exists(public_path('storage/'.$item['gambar'])))
                 ? asset('storage/'.$item['gambar'])
@@ -149,52 +263,38 @@
         @endphp
 
         <div class="cart-item">
-
-            {{-- CHECKBOX --}}
             <input type="checkbox" name="selected_items[]" value="{{ $item['id'] }}" class="check-item">
 
-            <img src="{{ $image }}">
+            <img src="{{ $image }}" onerror="this.src='{{ asset('images/no-image.png') }}'">
 
             <div class="cart-info">
                 <h4>{{ $item['nama_alat'] }}</h4>
-
                 <div class="qty-control">
-                    <form action="{{ route('medis.cart.decrease',$item['id']) }}" method="POST">
-                        @csrf
-                        <button class="qty-btn">-</button>
-                    </form>
-
+                    <button type="submit" formaction="{{ route('medis.cart.decrease',$item['id']) }}" class="qty-btn">-</button>
                     <span>{{ $item['qty'] }}</span>
-
-                    <form action="{{ route('medis.cart.increase',$item['id']) }}" method="POST">
-                        @csrf
-                        <button class="qty-btn">+</button>
-                    </form>
+                    <button type="submit" formaction="{{ route('medis.cart.increase',$item['id']) }}" class="qty-btn">+</button>
                 </div>
             </div>
 
-            <form action="{{ route('medis.cart.remove',$item['id']) }}" method="POST">
-                @csrf
-                <button class="btn-remove">🗑</button>
-            </form>
-
+            <button type="submit" formaction="{{ route('medis.cart.remove',$item['id']) }}" class="btn-remove">
+                <i class="fa-solid fa-trash-can"></i>
+            </button>
         </div>
 
         @empty
-            <p class="empty">Keranjang kosong</p>
+            <div class="empty">
+                <p>Keranjang Anda masih kosong.</p>
+            </div>
         @endforelse
-
     </div>
 
-    {{-- ================= SUMMARY + FORM ================= --}}
+    {{-- ================= FORM PEMINJAMAN (UPGRADED) ================= --}}
     <div class="summary">
+        <h3><i class="fa-solid fa-file-signature"></i> Form Peminjaman</h3>
 
-        <h3>Form Peminjaman</h3>
-
-        {{-- FORM INPUT --}}
         <div class="form-group">
-            <label>Keperluan</label>
-            <textarea name="keperluan" required placeholder="Contoh: Pemeriksaan pasien..."></textarea>
+            <label>Keperluan Peminjaman</label>
+            <textarea name="keperluan" rows="4" required placeholder="Jelaskan secara detail alasan peminjaman..."></textarea>
         </div>
 
         <div class="form-group">
@@ -207,25 +307,20 @@
             <input type="date" name="tanggal_kembali" required>
         </div>
 
-        <hr style="margin:15px 0;">
+        <div class="summary-details">
+            <p>Total Jenis Alat: <b id="totalItem">0</b></p>
+            <p>Total Jumlah (Qty): <b id="totalQty">0</b></p>
+        </div>
 
-        <h3>Ringkasan</h3>
-
-        <p>Total Dipilih: <b id="totalItem">0</b></p>
-        <p>Total Qty: <b id="totalQty">0</b></p>
-
-        <button class="btn-checkout">
-            ✔ Ajukan Peminjaman
+        <button type="submit" class="btn-checkout">
+            ✔ Ajukan Peminjaman Sekarang
         </button>
-
     </div>
-
 </div>
-
 </form>
 
-{{-- ================= SCRIPT ================= --}}
 <script>
+// Logic hitung total otomatis saat checkbox di-check
 const checkboxes = document.querySelectorAll('.check-item');
 const totalItemEl = document.getElementById('totalItem');
 const totalQtyEl = document.getElementById('totalQty');
@@ -241,7 +336,6 @@ function hitung(){
     checkboxes.forEach(cb => {
         if(cb.checked){
             totalItem++;
-
             let qty = cb.closest('.cart-item').querySelector('.qty-control span').innerText;
             totalQty += parseInt(qty);
         }
@@ -250,6 +344,16 @@ function hitung(){
     totalItemEl.innerText = totalItem;
     totalQtyEl.innerText = totalQty;
 }
+
+// Alert auto hide
+setTimeout(() => {
+    let alert = document.getElementById('alertBox');
+    if(alert) {
+        alert.style.transition = '0.5s';
+        alert.style.opacity = '0';
+        setTimeout(() => alert.remove(), 500);
+    }
+}, 3000);
 </script>
 
 @endsection

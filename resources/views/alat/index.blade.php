@@ -1,260 +1,294 @@
 @extends('layouts.app')
 
-@section('title', 'Data Alat')
+@section('title', 'Data Alat - ALMED')
 
 @section('content')
 
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
 <style>
-/* ================= HEADER ================= */
-.page-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 25px;
-}
-
-.page-header h1 {
-    font-size: 26px;
-    font-weight: 600;
-    color: #1f2937;
-}
-
-.page-header span {
-    color: #6b7280;
-    font-size: 14px;
-}
-
-/* ================= BUTTON ================= */
-.btn-add {
-    background: linear-gradient(135deg, #2563eb, #1d4ed8);
-    color: #fff;
-    padding: 10px 18px;
-    border-radius: 8px;
-    font-size: 14px;
-    text-decoration: none;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    transition: 0.3s;
-}
-
-.btn-add:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(37,99,235,.35);
-}
-
-/* ================= CARD ================= */
-.card {
-    background: #fff;
-    border-radius: 14px;
-    padding: 22px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.06);
-    animation: fadeUp 0.6s ease;
-}
-
-@keyframes fadeUp {
-    from {
-        opacity: 0;
-        transform: translateY(15px);
+    body {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        background-color: #f4f7fa;
     }
-    to {
-        opacity: 1;
-        transform: translateY(0);
+
+    .dashboard-container {
+        padding: 40px;
     }
-}
 
-/* ================= TABLE ================= */
-.table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 10px;
-}
+    /* ================= HEADER ================= */
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 30px;
+    }
 
-.table thead {
-    background: #4f46e5;
-}
+    .page-header h1 {
+        font-size: 28px;
+        font-weight: 800;
+        color: #0f172a;
+        margin: 0;
+        letter-spacing: -1px;
+    }
 
-/* ✅ CENTER SEMUA */
-.table th,
-.table td {
-    text-align: center;
-    padding: 14px;
-    font-size: 14px;
-}
+    .page-header p {
+        color: #64748b;
+        font-size: 14px;
+        margin-top: 4px;
+    }
 
-.table th {
-    color: #ffffff;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
+    .btn-add {
+        background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+        color: #fff;
+        padding: 12px 24px;
+        border-radius: 12px;
+        font-size: 14px;
+        font-weight: 700;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        transition: all 0.3s ease;
+        box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.3);
+    }
 
-.table td {
-    border-bottom: 1px solid #e5e7eb;
-    color: #374151;
-}
+    .btn-add:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 15px 20px -5px rgba(37, 99, 235, 0.4);
+        color: white;
+    }
 
-.table tbody tr:hover {
-    background: #f1f5ff;
-}
+    /* ================= CARD & TABLE ================= */
+    .card-table {
+        background: #ffffff;
+        border-radius: 20px;
+        border: none;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
+        overflow: hidden;
+    }
 
-/* ================= IMAGE ================= */
-.alat-img {
-    width: 55px;
-    height: 55px;
-    object-fit: cover;
-    border-radius: 10px;
-    border: 1px solid #e5e7eb;
-}
+    .table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 0;
+    }
 
-/* ================= BADGE ================= */
-.badge {
-    padding: 6px 12px;
-    border-radius: 20px;
-    font-size: 12px;
-    font-weight: 500;
-    display: inline-block;
-}
+    .table thead {
+        background: #f8fafc; /* Header abu-abu sangat muda biar clean */
+        border-bottom: 2px solid #f1f5f9;
+    }
 
-.badge.available {
-    background: #dcfce7;
-    color: #166534;
-}
+    .table th {
+        text-align: left;
+        padding: 20px;
+        font-size: 13px;
+        font-weight: 700;
+        color: #475569;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
 
-.badge.empty {
-    background: #fee2e2;
-    color: #991b1b;
-}
+    .table td {
+        padding: 18px 20px;
+        vertical-align: middle;
+        font-size: 14px;
+        color: #1e293b;
+        border-bottom: 1px solid #f1f5f9;
+    }
 
-/* ================= ACTION ================= */
-.action {
-    display: flex;
-    justify-content: center; /* ✅ tombol ke tengah */
-    gap: 10px;
-}
+    .table tbody tr:hover {
+        background-color: #fbfdff;
+    }
 
-.btn {
-    padding: 8px 12px;
-    border-radius: 8px;
-    font-size: 13px;
-    border: none;
-    cursor: pointer;
-    transition: 0.3s;
-}
+    /* ================= ALAT IMAGE ================= */
+    .alat-img-wrapper {
+        width: 60px;
+        height: 60px;
+        border-radius: 12px;
+        overflow: hidden;
+        border: 1px solid #e2e8f0;
+        background: #f8fafc;
+    }
 
-.btn-edit {
-    background: #facc15;
-    color: #854d0e;
-}
+    .alat-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
 
-.btn-edit:hover {
-    background: #fde047;
-}
+    /* ================= STOK BADGE ================= */
+    .stok-badge {
+        display: inline-block;
+        padding: 6px 12px;
+        border-radius: 8px;
+        font-size: 12px;
+        font-weight: 700;
+    }
 
-.btn-delete {
-    background: #fee2e2;
-    color: #991b1b;
-}
+    .stok-ready {
+        background: #dcfce7;
+        color: #15803d;
+    }
 
-.btn-delete:hover {
-    background: #fecaca;
-}
+    .stok-limit {
+        background: #fef3c7;
+        color: #b45309;
+    }
 
-/* ================= EMPTY ================= */
-.empty {
-    text-align: center;
-    padding: 40px;
-    color: #6b7280;
-}
+    .stok-empty {
+        background: #fef2f2;
+        color: #b91c1c;
+    }
+
+    /* ================= ACTION BUTTONS ================= */
+    .action-group {
+        display: flex;
+        gap: 8px;
+    }
+
+    .btn-action {
+        width: 38px;
+        height: 38px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 10px;
+        transition: all 0.2s ease;
+        text-decoration: none;
+        border: none;
+        cursor: pointer;
+    }
+
+    .btn-edit-alat {
+        background: #f0f9ff;
+        color: #0369a1;
+    }
+
+    .btn-edit-alat:hover {
+        background: #0369a1;
+        color: #ffffff;
+    }
+
+    .btn-delete-alat {
+        background: #fff1f2;
+        color: #be123c;
+    }
+
+    .btn-delete-alat:hover {
+        background: #be123c;
+        color: #ffffff;
+    }
+
+    /* ================= EMPTY STATE ================= */
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+    }
+
+    .empty-state i {
+        font-size: 48px;
+        color: #cbd5e1;
+        margin-bottom: 15px;
+    }
+
+    .empty-state p {
+        color: #64748b;
+        font-size: 15px;
+    }
 </style>
 
-
-<!-- ================= HEADER ================= -->
-<div class="page-header">
-    <div>
-        <h1>Data Alat</h1>
-        <span>Daftar alat yang tersedia</span>
+<div class="dashboard-container">
+    <div class="page-header">
+        <div>
+            <h1>Data Alat</h1>
+            <p>Manajemen stok dan inventaris alat kesehatan ALMED</p>
+        </div>
+        <a href="{{ route('admin.alat.create') }}" class="btn-add">
+            <i class="fa-solid fa-plus-circle"></i> Tambah Alat Baru
+        </a>
     </div>
-    <a href="{{ route('admin.alat.create') }}" class="btn-add">
-        <i class="fa-solid fa-plus"></i> Tambah Alat
-    </a>
-</div>
 
-
-<!-- ================= CARD ================= -->
-<div class="card">
-    <table class="table">
-        <thead>
-            <tr>
-                <th style="width:60px">No</th>
-                <th style="width:90px">Gambar</th>
-                <th>Nama Alat</th>
-                <th style="width:90px">Jumlah</th>
-                <th style="width:120px">Status</th>
-                <th style="width:130px">Aksi</th>
-            </tr>
-        </thead>
-
-        <tbody>
-            @forelse($alat as $item)
+    <div class="card-table">
+        <table class="table">
+            <thead>
                 <tr>
-
-                    <td>{{ $loop->iteration }}</td>
-
-                    <!-- GAMBAR -->
-                    <td>
-                        @if($item->gambar && file_exists(public_path('storage/'.$item->gambar)))
-                            <img src="{{ asset('storage/'.$item->gambar) }}" class="alat-img">
-                        @else
-                            <img src="{{ asset('images/no-image.png') }}" class="alat-img">
-                        @endif
-                    </td>
-
-                    <!-- NAMA -->
-                    <td>{{ $item->nama_alat }}</td>
-
-                    <!-- JUMLAH -->
-                    <td>{{ $item->jumlah }}</td>
-
-                    <!-- STATUS -->
-                    <td>
-                        @if($item->jumlah > 0)
-                            <span class="badge available">Tersedia</span>
-                        @else
-                            <span class="badge empty">Habis</span>
-                        @endif
-                    </td>
-
-                    <!-- AKSI -->
-                    <td>
-                        <div class="action">
-                            <a href="{{ route('admin.alat.edit', $item->id) }}" class="btn btn-edit">
-                                <i class="fa-solid fa-pen"></i>
-                            </a>
-
-                            <form action="{{ route('admin.alat.destroy', $item->id) }}" method="POST">
-                                @csrf
-                                @method('DELETE')
-                                <button class="btn btn-delete"
-                                    onclick="return confirm('Yakin hapus alat ini?')">
-                                    <i class="fa-solid fa-trash"></i>
-                                </button>
-                            </form>
-                        </div>
-                    </td>
-
+                    <th style="width: 50px;">No</th>
+                    <th>Gambar</th>
+                    <th>Nama Alat</th>
+                    <th>Stok</th>
+                    <th>Harga Barang</th>
+                    <th style="text-align: center;">Aksi</th>
                 </tr>
-            @empty
-                <tr>
-                    <td colspan="6">
-                        <div class="empty">
-                            <i class="fa-solid fa-box-open fa-2x"></i>
-                            <p>Data alat belum tersedia</p>
-                        </div>
-                    </td>
-                </tr>
-            @endforelse
-        </tbody>
-    </table>
+            </thead>
+
+            <tbody>
+                @forelse($alat as $item)
+                    <tr>
+                        <td><span style="color: #94a3b8; font-weight: 600;">{{ $loop->iteration }}</span></td>
+
+                        <td>
+                            <div class="alat-img-wrapper">
+                                @if($item->gambar && file_exists(public_path('storage/'.$item->gambar)))
+                                    <img src="{{ asset('storage/' . $item->gambar) }}" class="alat-img">
+                                @else
+                                    <img src="{{ asset('images/no-image.png') }}" class="alat-img" style="opacity: 0.5;">
+                                @endif
+                            </div>
+                        </td>
+
+                        <td>
+                            <div style="font-weight: 700; color: #1e293b;">{{ $item->nama_alat }}</div>
+                            <div style="font-size: 12px; color: #94a3b8;">ID: ALM-{{ 1000 + $item->id }}</div>
+                        </td>
+
+                        <td>
+                            @php
+                                $stokClass = $item->stok > 10 ? 'stok-ready' : ($item->stok > 0 ? 'stok-limit' : 'stok-empty');
+                            @endphp
+                            <span class="stok-badge {{ $stokClass }}">
+                                {{ $item->stok }} Unit
+                            </span>
+                        </td>
+
+                        <td>
+                            <span style="font-weight: 600; color: #059669;">
+                                Rp {{ number_format($item->harga ?? 0, 0, ',', '.') }}
+                            </span>
+                        </td>
+
+                        <td>
+                            <div class="action-group" style="justify-content: center;">
+                                <a href="{{ route('admin.alat.edit', $item->id) }}" class="btn-action btn-edit-alat" title="Edit Alat">
+                                    <i class="fa-solid fa-pen-to-square"></i>
+                                </a>
+
+                                <form action="{{ route('admin.alat.destroy', $item->id) }}" method="POST" style="display:inline;">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button class="btn-action btn-delete-alat"
+                                            onclick="return confirm('Yakin hapus alat ini?')"
+                                            title="Hapus Alat">
+                                        <i class="fa-solid fa-trash-can"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                @empty
+                    <tr>
+                        <td colspan="6">
+                            <div class="empty-state">
+                                <i class="fa-solid fa-box-open"></i>
+                                <p>Belum ada data alat kesehatan yang terdaftar.</p>
+                            </div>
+                        </td>
+                    </tr>
+                @endforelse
+            </tbody>
+        </table>
+    </div>
 </div>
 
 @endsection

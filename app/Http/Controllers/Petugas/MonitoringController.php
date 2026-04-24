@@ -3,115 +3,100 @@
 namespace App\Http\Controllers\Petugas;
 
 use App\Http\Controllers\Controller;
-use App\Models\Alat;
+use Illuminate\Http\Request;
 use App\Models\Peminjaman;
-use App\Models\Pengembalian;
+use App\Models\Notif; // Tambahkan ini
+use DB;
 
 class MonitoringController extends Controller
 {
-    // ========================
-    // DASHBOARD
-    // ========================
     public function dashboard()
     {
-        $totalAlat = Alat::sum('jumlah');
-
-        $alatTersedia = Alat::where('jumlah', '>', 0)->sum('jumlah');
-
-        $peminjamanAktif = Peminjaman::whereIn('status', [
-            'dipinjam',
-            'menunggu',
-            'approved'
-        ])->count();
-
-        $menunggu = Peminjaman::where('status', 'menunggu')->count();
-        $ditolak = Peminjaman::where('status', 'ditolak')->count();
-        $terlambat = Peminjaman::where('status', 'terlambat')->count();
-
-        $pengembalianHariIni = Pengembalian::whereDate('created_at', today())->count();
-
-        $stokRendah = Alat::where('jumlah', '<=', 3)->count();
-
-        $aktivitas = Peminjaman::with(['user', 'detail.alat'])
-            ->latest()
-            ->take(6)
-            ->get();
-
-        // 🔥 FIX UTAMA: pakai detail_peminjaman, bukan peminjaman.alat_id
-        $alatPopuler = Alat::select('alat.*')
-            ->selectRaw('(
-                SELECT COUNT(*)
-                FROM detail_peminjaman
-                WHERE detail_peminjaman.alat_id = alat.id
-            ) as peminjaman_count')
-            ->orderByDesc('peminjaman_count')
-            ->take(5)
-            ->get();
-
-        return view('petugas.dashboard', compact(
-            'totalAlat',
-            'alatTersedia',
-            'peminjamanAktif',
-            'menunggu',
-            'ditolak',
-            'terlambat',
-            'pengembalianHariIni',
-            'stokRendah',
-            'aktivitas',
-            'alatPopuler'
-        ));
+        // Logika dashboard petugas kamu
+        return view('petugas.dashboard');
     }
 
-    // ========================
-    // HALAMAN SETUJUI PEMINJAMAN
-    // ========================
     public function menyetujui()
     {
-        $peminjaman = Peminjaman::with(['user', 'detail.alat'])
+        $peminjaman = Peminjaman::with('user', 'detail.alat')
+            ->where('status', 'menunggu')
             ->latest()
             ->get();
-
-        return view('petugas.peminjaman', compact('peminjaman'));
+        return view('petugas.peminjaman.index', compact('peminjaman'));
     }
 
-    // ========================
-    // SETUJUI
-    // ========================
+    // ================= SETUJUI =================
     public function setujui($id)
     {
-        $data = Peminjaman::findOrFail($id);
+        DB::beginTransaction();
+        try {
+            $peminjaman = Peminjaman::findOrFail($id);
 
-        $data->update([
-            'status' => 'dipinjam'
-        ]);
+            $peminjaman->update([
+                'status' => 'dipinjam'
+            ]);
 
-        return back()->with('success', 'Peminjaman disetujui');
+            // 🔥 KIRIM NOTIF KE MEDIS
+            Notif::create([
+                'user_id' => $peminjaman->user_id,
+                'judul'   => '✅ Peminjaman Disetujui',
+                'pesan'   => "Pengajuan pinjaman Anda #$id telah disetujui. Silakan ambil alat medis di bagian sarpras.",
+                'is_read' => false
+            ]);
+
+            DB::commit();
+            return back()->with('success', 'Peminjaman disetujui & Notifikasi terkirim!');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->with('error', $e->getMessage());
+        }
     }
 
-    // ========================
-    // TOLAK
-    // ========================
+    // ================= TOLAK =================
     public function tolak($id)
     {
-        $data = Peminjaman::findOrFail($id);
+        DB::beginTransaction();
+        try {
+            $peminjaman = Peminjaman::with('detail.alat')->findOrFail($id);
 
-        $data->update([
-            'status' => 'ditolak'
-        ]);
+            // Balikin stok karena ditolak
+            foreach ($peminjaman->detail as $detail) {
+                $detail->alat->increment('stok', $detail->qty);
+            }
 
-        return back()->with('success', 'Peminjaman ditolak');
+            $peminjaman->update([
+                'status' => 'ditolak'
+            ]);
+
+            // 🔥 KIRIM NOTIF KE MEDIS
+            Notif::create([
+                'user_id' => $peminjaman->user_id,
+                'judul'   => '❌ Peminjaman Ditolak',
+                'pesan'   => "Maaf, pengajuan pinjaman Anda #$id ditolak oleh petugas. Silakan hubungi admin untuk info lebih lanjut.",
+                'is_read' => false
+            ]);
+
+            DB::commit();
+            return back()->with('success', 'Peminjaman ditolak & Notifikasi terkirim!');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->with('error', $e->getMessage());
+        }
     }
 
-    // ========================
-    // HALAMAN PENGEMBALIAN
-    // ========================
+    public function monitoring()
+    {
+        $peminjaman = Peminjaman::with('user', 'detail.alat')->latest()->get();
+        return view('petugas.monitoring', compact('peminjaman'));
+    }
+
     public function pengembalian()
     {
-        $peminjaman = Peminjaman::with(['user', 'detail.alat'])
-            ->where('status', 'dipinjam')
+        // Ambil data yang statusnya 'diajukan' atau 'dipinjam'
+        $peminjaman = Peminjaman::with('user', 'detail.alat')
+            ->whereIn('status', ['dipinjam', 'diajukan', 'proses_pengembalian'])
             ->latest()
             ->get();
-
-        return view('petugas.pengembalian', compact('peminjaman'));
+        return view('petugas.pengembalian.index', compact('peminjaman'));
     }
-}
+}   

@@ -25,7 +25,7 @@ class PengembalianController extends Controller
             $alat = $detail->alat;
 
             if ($alat) {
-                $alat->increment('jumlah', $detail->qty);
+                $alat->increment('stok', $detail->qty);
             }
         }
 

@@ -23,7 +23,7 @@ Cetak
                 <th>No</th>
                 <th>Nama Siswa</th>
                 <th>Alat</th>
-                <th>Jumlah</th>
+                <th>Stok</th>
                 <th>Status</th>
                 <th>Tanggal</th>
             </tr>
@@ -35,7 +35,7 @@ Cetak
             <td>{{ $loop->iteration }}</td>
             <td>{{ $p->user->name }}</td>
             <td>{{ $p->alat->nama_alat }}</td>
-            <td>{{ $p->jumlah }}</td>
+            <td>{{ $p->stok }}</td>
             <td>{{ $p->status }}</td>
             <td>{{ $p->created_at }}</td>
         </tr>

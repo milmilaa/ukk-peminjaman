@@ -8,19 +8,25 @@ use Illuminate\Http\Request;
 // MODEL
 use App\Models\Alat;
 use App\Models\Peminjaman;
+use App\Models\Notif; // Tambahkan ini sis
 
 class DashboardController extends Controller
 {
     public function index()
-{
-    $alat = \App\Models\Alat::all();
+    {
+        $alat = Alat::all();
 
-    // 🔥 ambil riwayat + relasi
-    $peminjaman = \App\Models\Peminjaman::with('detail.alat')
-        ->where('user_id', auth()->id())
-        ->latest()
-        ->get();
+        // 🔥 ambil riwayat + relasi
+        $peminjaman = Peminjaman::with('detail.alat')
+            ->where('user_id', auth()->id())
+            ->latest()
+            ->get();
 
-    return view('medis.dashboard', compact('alat','peminjaman'));
-}
+        // 🔔 Hitung notifikasi yang belum dibaca khusus untuk user ini
+        $unreadCount = Notif::where('user_id', auth()->id())
+            ->where('is_read', false)
+            ->count();
+
+        return view('medis.dashboard', compact('alat', 'peminjaman', 'unreadCount'));
+    }
 }

@@ -8,7 +8,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
 
-    <!-- Flatpickr hanya untuk Admin & Petugas -->
     @php $authUser = auth()->user(); @endphp
     @if($authUser && in_array($authUser->role, ['admin', 'petugas']))
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
@@ -146,7 +145,7 @@
             color: #475569;
         }
 
-        /* FILTER BAR - Diperbaiki agar bisa di-scroll horizontal */
+        /* FILTER BAR */
         .filter-bar {
             background: #ffffff;
             padding: 18px 30px;
@@ -343,16 +342,24 @@
     $user = auth()->user();
     $cart = session('cart', []);
     $cartCount = is_array($cart) ? array_sum(array_column($cart, 'qty')) : 0;
-    $notifCount = 5;
 
-    $isAdmin = $user && $user->role === 'admin';
-    $isPetugas = $user && $user->role === 'petugas';
-    $isMedis = $user && $user->role === 'medis';
+    $role = $user ? strtolower($user->role) : null;
+
+    $isAdmin = $role === 'admin';
+    $isPetugas = $role === 'petugas';
+    $isMedis = $role === 'medis';
+
+    // 🔥 Ambil jumlah notif belum dibaca
+    $unreadNotifCount = 0;
+    if($user) {
+        $unreadNotifCount = \App\Models\Notif::where('user_id', $user->id)
+                            ->where('is_read', false)
+                            ->count();
+    }
 @endphp
 
 <div class="wrapper">
 
-    <!-- SIDEBAR -->
     <aside class="sidebar" id="sidebar">
         <div class="brand">
             <i class="fa-solid fa-box-open"></i>
@@ -361,65 +368,64 @@
 
         <nav class="menu">
 
-<a href="{{ route('dashboard') }}">
-<i class="fa-solid fa-house"></i> Dashboard
-</a>
+            <a href="{{ route('dashboard') }}" class="{{ request()->routeIs('dashboard') ? 'active' : '' }}">
+                <i class="fa-solid fa-house"></i> Dashboard
+            </a>
 
-@if($isAdmin)
-<a href="{{ route('admin.users.index') }}"><i class="fa-solid fa-users"></i> Manajemen User</a>
-<a href="{{ route('admin.alat.index') }}"><i class="fa-solid fa-microscope"></i> Data Alat</a>
-<a href="{{ route('admin.kategori.index') }}"><i class="fa-solid fa-tags"></i> Kategori</a>
+            @if($isAdmin)
+            <a href="{{ route('admin.users.index') }}" class="{{ request()->routeIs('admin.users.*') ? 'active' : '' }}"><i class="fa-solid fa-users"></i> Manajemen User</a>
+            <a href="{{ route('admin.alat.index') }}" class="{{ request()->routeIs('admin.alat.*') ? 'active' : '' }}"><i class="fa-solid fa-microscope"></i> Data Alat</a>
+            <a href="{{ route('admin.kategori.index') }}" class="{{ request()->routeIs('admin.kategori.*') ? 'active' : '' }}"><i class="fa-solid fa-tags"></i> Kategori</a>
 
-<div class="menu-divider"></div>
+            <div class="menu-divider"></div>
 
-<a href="{{ route('admin.peminjaman.index') }}"><i class="fa-solid fa-hand-holding-medical"></i> Peminjaman</a>
-<a href="{{ route('admin.pengembalian.index') }}"><i class="fa-solid fa-rotate-left"></i> Pengembalian</a>
-<a href="{{ route('admin.monitoring.log') }}"><i class="fa-solid fa-clock-rotate-left"></i> Log Aktivitas</a>
-@endif
+            <a href="{{ route('admin.peminjaman.index') }}" class="{{ request()->routeIs('admin.peminjaman.*') ? 'active' : '' }}"><i class="fa-solid fa-hand-holding-medical"></i> Peminjaman</a>
+            <a href="{{ route('admin.pengembalian.index') }}" class="{{ request()->routeIs('admin.pengembalian.*') ? 'active' : '' }}"><i class="fa-solid fa-rotate-left"></i> Pengembalian</a>
+            <a href="{{ route('admin.monitoring.log') }}" class="{{ request()->routeIs('admin.monitoring.log') ? 'active' : '' }}"><i class="fa-solid fa-clock-rotate-left"></i> Log Aktivitas</a>
+            @endif
 
-@if($isPetugas)
-<div class="menu-divider"></div>
+            @if($isPetugas)
+            <div class="menu-divider"></div>
 
-<div style="padding:0 28px;font-size:12px;color:#94a3b8;font-weight:600;">
-MENU PETUGAS
-</div>
+            <div style="padding:0 28px;font-size:12px;color:#94a3b8;font-weight:600;">
+            MENU PETUGAS
+            </div>
 
-<a href="{{ route('petugas.menyetujui') }}">
-<i class="fa-solid fa-list-check"></i> Aktivitas Peminjaman
-</a>
+            <a href="{{ route('petugas.menyetujui') }}" class="{{ request()->routeIs('petugas.menyetujui') ? 'active' : '' }}">
+                <i class="fa-solid fa-list-check"></i> Aktivitas Peminjaman
+            </a>
 
-<a href="{{ route('petugas.pengembalian') }}">
-<i class="fa-solid fa-arrow-rotate-left"></i> Monitoring Pengembalian
-</a>
+            <a href="{{ route('petugas.pengembalian') }}" class="{{ request()->routeIs('petugas.pengembalian') ? 'active' : '' }}">
+                <i class="fa-solid fa-arrow-rotate-left"></i> Monitoring Pengembalian
+            </a>
 
-<a href="{{ route('petugas.cetak.peminjaman') }}">
-<i class="fa-solid fa-print"></i> Cetak Laporan
-</a>
-@endif
+            <a href="{{ route('petugas.cetak.peminjaman') }}" class="{{ request()->routeIs('petugas.cetak.peminjaman') ? 'active' : '' }}">
+                <i class="fa-solid fa-print"></i> Cetak Laporan
+            </a>
+            @endif
 
-@if($isMedis)
-<div class="menu-divider"></div>
+            @if($isMedis)
+            <div class="menu-divider"></div>
 
-<a href="{{ route('medis.alat') }}">
-<i class="fa-solid fa-stethoscope"></i> Daftar Alat
-</a>
+            <a href="{{ route('medis.alat') }}" class="{{ request()->routeIs('medis.alat') ? 'active' : '' }}">
+                <i class="fa-solid fa-stethoscope"></i> Daftar Alat
+            </a>
 
-<a href="{{ route('medis.aktivitas') }}">
-<i class="fa-solid fa-list-check"></i> Riwayat Aktivitas
-</a>
-@endif
+            <a href="{{ route('medis.aktivitas') }}" class="{{ request()->routeIs('medis.aktivitas') ? 'active' : '' }}">
+                <i class="fa-solid fa-list-check"></i> Riwayat Aktivitas
+            </a>
+            @endif
 
-@if($user)
-<div class="menu-divider"></div>
-<a href="{{ route('logout') }}" onclick="event.preventDefault();document.getElementById('logout-form').submit();">
-<i class="fa-solid fa-right-from-bracket"></i> Logout
-</a>
-@endif
+            @if($user)
+            <div class="menu-divider"></div>
+            <a href="{{ route('logout') }}" class="logout" onclick="event.preventDefault();document.getElementById('logout-form').submit();">
+                <i class="fa-solid fa-right-from-bracket"></i> Logout
+            </a>
+            @endif
 
-</nav>
+        </nav>
     </aside>
 
-    <!-- MAIN -->
     <div class="main">
 
         <div class="navbar">
@@ -444,15 +450,16 @@ MENU PETUGAS
                 </div>
                 @endif
 
+                {{-- 🔥 Icon Notif dengan Badge Dinamis --}}
                 <div class="nav-icon" onclick="window.location='{{ route('notif.page') }}'">
                     <i class="fa-solid fa-bell"></i>
-                    @if($notifCount > 0)
-                        <span class="badge">{{ $notifCount }}</span>
+                    @if($unreadNotifCount > 0)
+                        <span class="badge">{{ $unreadNotifCount }}</span>
                     @endif
                 </div>
 
                 <div class="nav-icon" onclick="toggleDarkMode()" id="darkModeIcon">
-                    <i class="fa-solid fa-moon"></i> 
+                    <i class="fa-solid fa-moon"></i>
                 </div>
 
                 <div class="nav-icon" onclick="toggleFullscreen()">
@@ -471,7 +478,6 @@ MENU PETUGAS
             </div>
         </div>
 
-        <!-- FILTER BAR - Bisa di-scroll horizontal -->
         @if($isAdmin || $isPetugas)
         <div class="filter-bar">
             <input type="text" id="dateFrom" class="filter-input" placeholder="Tanggal Peminjaman">
@@ -510,11 +516,10 @@ MENU PETUGAS
     </div>
 </div>
 
-<!-- MODAL PROFILE -->
 <div class="modal" id="profileModal">
     <div class="modal-box">
         @if($user)
-            <img src="{{ $user->foto ? asset($user->foto) : 'https://i.pravatar.cc/150?img=3' }}" id="previewImg" style="width:120px; height:120px; margin-bottom:20px; border-radius:50%;">
+            <img src="{{ $user->foto ? asset($user->foto) : 'https://i.pravatar.cc/150?img=3' }}" id="previewImg" style="width:120px; height:120px; margin-bottom:20px; border-radius:50%; object-fit: cover;">
 
             <h3>{{ $user->name }}</h3>
             <p style="color:#64748b; margin-bottom:25px;">{{ $user->email }}</p>
@@ -583,7 +588,6 @@ function toggleFullscreen() {
     }
 }
 
-// Initialize Flatpickr
 document.addEventListener('DOMContentLoaded', function() {
     @if($isAdmin || $isPetugas)
     flatpickr("#dateFrom", { dateFormat: "Y-m-d" });
@@ -620,11 +624,11 @@ function refreshPage() {
 }
 
 function exportExcel() {
-    window.location.href = '{{ route("petugas.cetak.peminjaman") }}';
+    window.location.href = '{{ route("petugas.peminjaman.export.excel") }}';
 }
 
 function exportPDF() {
-    alert('Fitur Export PDF sedang dalam pengembangan.\n\nSilakan buat route PDF di Petugas Controller.');
+    alert('Fitur Export PDF sedang dalam pengembangan.');
 }
 </script>
 

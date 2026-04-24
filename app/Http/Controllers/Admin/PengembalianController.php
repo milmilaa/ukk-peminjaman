@@ -29,7 +29,7 @@ class PengembalianController extends Controller
 
         return view('pengembalian.create', compact('peminjamans'));
     }
-    
+
     // STORE
     public function store(Request $request)
     {
@@ -55,7 +55,7 @@ class PengembalianController extends Controller
         ]);
 
         // KEMBALIKAN STOK ALAT
-        $peminjaman->alat->increment('stok', $peminjaman->jumlah);
+        $peminjaman->alat->increment('stok', $peminjaman->stok);
 
         return redirect()->route('pengembalian.index')
             ->with('success', 'Pengembalian berhasil dicatat');

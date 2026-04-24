@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('nama_alat');
             $table->foreignId('kategori_id')->constrained()->cascadeOnDelete();
-            $table->integer('jumlah')->default(0);
+            $table->integer('stok')->default(0);
             $table->string('gambar')->nullable();
             $table->timestamps();
         });

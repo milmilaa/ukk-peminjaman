@@ -15,17 +15,28 @@ class UserController extends Controller
         $this->middleware(['auth', 'role:admin']);
     }
 
+    // =========================
+    // INDEX (FIXED)
+    // =========================
     public function index()
     {
         $users = User::orderBy('id', 'asc')->get();
+
+        // 🔥 pastikan view ini benar sesuai file kamu
         return view('users.index', compact('users'));
     }
 
+    // =========================
+    // CREATE
+    // =========================
     public function create()
     {
         return view('users.create');
     }
 
+    // =========================
+    // STORE
+    // =========================
     public function store(Request $request)
     {
         $validated = $request->validate([
@@ -49,16 +60,25 @@ class UserController extends Controller
             ->with('success', 'User berhasil ditambahkan');
     }
 
+    // =========================
+    // SHOW
+    // =========================
     public function show(User $user)
     {
         return view('users.show', compact('user'));
     }
 
+    // =========================
+    // EDIT
+    // =========================
     public function edit(User $user)
     {
         return view('users.edit', compact('user'));
     }
 
+    // =========================
+    // UPDATE
+    // =========================
     public function update(Request $request, User $user)
     {
         $validated = $request->validate([
@@ -92,6 +112,9 @@ class UserController extends Controller
             ->with('success', 'User berhasil diupdate');
     }
 
+    // =========================
+    // DELETE
+    // =========================
     public function destroy(User $user)
     {
         if (auth()->id() === $user->id) {
@@ -107,11 +130,9 @@ class UserController extends Controller
             ->with('success', 'User berhasil dihapus');
     }
 
-    /*
-    |--------------------------------------------------------------------------
-    | ✅ FITUR BARU: UPDATE FOTO PROFIL (IG STYLE)
-    |--------------------------------------------------------------------------
-    */
+    // =========================
+    // UPDATE FOTO
+    // =========================
     public function updatePhoto(Request $request)
     {
         $request->validate([
@@ -122,7 +143,6 @@ class UserController extends Controller
 
         if ($request->hasFile('foto')) {
 
-            // hapus foto lama
             if ($user->foto && file_exists(public_path($user->foto))) {
                 unlink(public_path($user->foto));
             }
